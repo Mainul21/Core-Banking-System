@@ -31,7 +31,7 @@ const Login = () => {
 
       if (data.token) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user)); // Store user details
+        // localStorage.setItem("user", JSON.stringify(data.user)); // Store user details
         localStorage.setItem("showLoginToast", "true"); // for toast
         login(data.token, data.role, data.user);
         // console.log(data.role);

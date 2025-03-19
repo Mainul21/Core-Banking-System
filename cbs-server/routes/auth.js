@@ -14,7 +14,7 @@ router.get("/user", authMiddleware(), async (req, res) => {
     try {
         console.log("Fetching user data for ID:", req.user?.id); // Debugging
         console.log("Decoded JWT User Data:", req.user); // Debugging
-        const user = await pool.query("SELECT id, email, role, name FROM users WHERE id = $1", [req.user.id]);
+        const user = await pool.query("SELECT id, email, role, name, balance, account_number FROM users WHERE id = $1", [req.user.id]);
         if (user.rows.length === 0) {
             console.log("User not found in database"); // Debugging
             return res.status(404).json({ message: "User not found" });

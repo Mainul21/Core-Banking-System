@@ -17,7 +17,7 @@ const EmployeeDashBoard = () => {
 
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center px-4 bg-gray-800">
+    <div className="h-screen flex flex-col items-center justify-center px-4 bg-[url('./emp-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300">
       <h1 className="text-center mb-6 text-3xl font-bold">Welcome {name}</h1>
       <button className="btn bg-emerald-500 rounded-XL transition-all duration-300 hover:bg-red-500 text-black" onClick={logout}>Logout</button>
       <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">

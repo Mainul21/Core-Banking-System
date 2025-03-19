@@ -16,6 +16,7 @@ const loginUser = async (req, res) => {
     const userResult = await pool.query(
       `SELECT u.*, 
               c.account_number, 
+              c.balance,
               e.employee_id, 
               a.admin_id,
               u.name 
@@ -66,7 +67,10 @@ const loginUser = async (req, res) => {
         id: uniqueID,
         email: user.email,
         role: userRole,
-        name: user.name
+        name: user.name,
+        balance:user.balance,
+        account_number:user.account_number,
+        employee_id:user.employee_id,
       },
     });
 
