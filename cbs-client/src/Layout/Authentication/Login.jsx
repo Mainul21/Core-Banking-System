@@ -54,19 +54,19 @@ const Login = () => {
   };
 
   return (
-    <div className="hero bg-base-200 min-h-screen">
+    <div className="hero bg-base-200 min-h-screen bg-[url('./bg-login.jpg')] bg-cover bg-center bg-no-repeat">
       <div className="hero-content flex-col lg:flex-col">
         <div className="text-center lg:text-center">
           <img className="w-1/4 mx-auto" src="./CBS.png" alt="" />
-          <h1 className="text-5xl font-bold">Login now!</h1>
-          <p className="py-6">Welcome to Core Banking System.</p>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Login now!</h1>
+          <p className="py-6 bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Welcome to Core Banking System.</p>
         </div>
-        <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+        <div className="card bg-transparent w-full max-w-sm shrink-0 shadow-2xl">
           <div className="card-body">
             <form onSubmit={handleLogin}>
               <fieldset className="fieldset">
                 {error && <p className="text-red-500">{error}</p>}
-                <label className="fieldset-label">Account Number / Employee ID / Admin ID</label>
+                <label className="fieldset-label bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Account Number / Employee ID / Admin ID</label>
                 <input
                   name="id" // Change name to id
                   type="text" // Change type to text
@@ -74,7 +74,7 @@ const Login = () => {
                   placeholder="Enter your ID"
                   required
                 />
-                <label className="fieldset-label">Password</label>
+                <label className="fieldset-label bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Password</label>
                 <input
                   name="password"
                   type="password"
@@ -83,10 +83,10 @@ const Login = () => {
                   required
                 />
                 <div className="flex-col-reverse">
-                  <a className="link link-hover">Forgot password?</a>
+                  <a className="link link-hover bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Forgot password?</a>
                 </div>
                 <div>
-                  <NavLink to="/register" className="text-blue-700">
+                  <NavLink to="/register" className="bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">
                     Don't have an Account?
                   </NavLink>
                 </div>
