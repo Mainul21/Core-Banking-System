@@ -10,12 +10,31 @@ const port = 5000||process.env.PORT;
 // middleware
 
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: "*", credentials: true }));
 
 app.use(express.json());
 
 // routes
 app.use("/api/auth", authRoutes);
+
+// customer info for employee dashboard
+app.get("/api/customer-info", async (req, res) => {
+  try{
+    const result = await pool.query(`SELECT
+              c.account_number, 
+              c.balance,
+              u.name,
+              u.email 
+       FROM users u
+       LEFT JOIN customers c ON u.id = c.id
+       where u.role = 'customer'`);
+    res.json(result.rows);
+  }catch(err){
+    console.error(err.message);
+    res.status(500).send("Database query failed");
+
+  }
+});
 
 
 app.get("/", (req, res) => {
