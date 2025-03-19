@@ -1,12 +1,14 @@
 import { ToastContainer, toast } from "react-toastify";
 import {useContext, useEffect,useState} from "react";
 import { AuthContext } from "../Context/AuthContext";
+import { Link } from "react-router";
 const EmployeeDashBoard = () => {
   const [loading, setLoading] = useState(true);
   const [customers, setCustomers] = useState([]);
   const { user, logout} = useContext(AuthContext);
   console.log('login',user.name);
   const {name} =user;
+
 
   useEffect(() => {
     const message = localStorage.getItem("showLoginToast");
@@ -75,7 +77,7 @@ const EmployeeDashBoard = () => {
         </div>
       )}
       <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">
-        <div className="border rounded-XL p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold hover:text-black"><h1 className="text-center ">Open Account</h1></div>
+        <Link to="/OpenAccount"><div className="border rounded-XL p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold hover:text-black"><h1 className="text-center ">Open Account</h1></div></Link>
         <div className="border rounded-XL p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold hover:text-black"><h1 className="text-center">Make Transaction</h1></div>
         <div className="border rounded-XL p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold hover:text-black"><h1 className="text-center">Transfer Fund</h1></div>
       </div>

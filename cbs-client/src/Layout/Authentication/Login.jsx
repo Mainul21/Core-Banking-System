@@ -86,9 +86,7 @@ const Login = () => {
                   <a className="link link-hover bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Forgot password?</a>
                 </div>
                 <div>
-                  <NavLink to="/register" className="bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">
-                    Don't have an Account?
-                  </NavLink>
+             
                 </div>
                 <button className="btn btn-neutral mt-4" type="submit">
                   Login

@@ -2,7 +2,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router"; // Use 'react-router-dom' for V7
 import "./index.css";
 import App from "./App";
-import Login from "./Layout/Authentication/login";
+import Login from "./Layout/Authentication/Login";
+import OpenAccount from "./Layout/Components/OpenAccount";
 import AdminDashBoard from "./Layout/Dashboard/AdminDashBoard";
 import EmployeeDashBoard from "./Layout/Dashboard/EmployeeDashBoard";
 import CustomerDashBoard from "./Layout/Dashboard/CustomerDashBoard";
@@ -22,6 +23,7 @@ createRoot(document.getElementById("root")).render(
 
         <Route element={<ProtectedRoute allowedRoles={["employee"]} />}>
           <Route path="/employee-dashboard" element={<EmployeeDashBoard />} />
+          <Route path="/openAccount" element={<OpenAccount />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["customer"]} />}>
