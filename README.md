@@ -1,4 +1,4 @@
-##This is a Project created to showcase my knowlegde of Mern stack in web development and the concept of banking industry I learned during my internship at City Bank PLC.
+**This is a Project created to showcase my knowlegde of Mern stack in web development and the concept of banking industry I learned during my internship at City Bank PLC.
 
 This baking system has 3 types of users;
 1. Customer
