@@ -37,7 +37,7 @@ const EmployeeDashBoard = () => {
     }
     fetchCustomer();
 
-    const interval = setInterval(fetchCustomer, 5000); // Fetch every 5 seconds
+    const interval = setInterval(fetchCustomer, 15000); // Fetch every 5 seconds
     return () => clearInterval(interval); // Cleanup interval on component unmount
 
   }, []);
