@@ -26,7 +26,7 @@ const CustomerDashBoard = () => {
   return (
     <div className="h-screen flex flex-col items-center justify-center px-4 bg-[url('./cd-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300">
       <h1 className="text-center mb-6 text-3xl font-bold ">Welcome, {name}</h1>
-      <div>
+      <div className="shadow-xl bg-black/30 w-full max-w-xl mb-6 p-6 rounded-lg flex flex-col items-center justify-center">
         <h1 className="text-center mb-6 text-xl font-bold">Email: {email}</h1>
         <h1 className="text-center mb-6 text-xl font-bold">Account Number: {account_number}</h1>
         <div className="flex justify-center items-center gap-2">
@@ -40,18 +40,18 @@ const CustomerDashBoard = () => {
             {showBalance ? <FaRegEyeSlash /> : <FaRegEye />}
           </button>
         </div>
-      </div>
       <button
         className="btn bg-emerald-500 rounded-xl transition-all duration-300 hover:bg-red-500 text-black"
         onClick={logout}
       >
         Logout
       </button>
+      </div>
       <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">
-        <div className="border border-emerald-700 text-emerald-300 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
+        <div className="border-4 bg-black/30 border-emerald-700 text-emerald-300 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
           <h1 className="text-center  ">Make Transaction</h1>
         </div>
-        <div className="border border-emerald-700 text-emerald-700 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
+        <div className="border-4 bg-white/30 border-emerald-700 text-emerald-700 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
           <h1 className="text-center">Transfer Fund</h1>
         </div>
       </div>

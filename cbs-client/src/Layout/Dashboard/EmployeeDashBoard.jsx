@@ -37,6 +37,9 @@ const EmployeeDashBoard = () => {
     }
     fetchCustomer();
 
+    const interval = setInterval(fetchCustomer, 5000); // Fetch every 5 seconds
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+
   }, []);
 
 
@@ -77,9 +80,9 @@ const EmployeeDashBoard = () => {
         </div>
       )}
       <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">
-        <Link to="/OpenAccount"><div className="border rounded-XL p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold hover:text-black"><h1 className="text-center ">Open Account</h1></div></Link>
-        <div className="border rounded-XL p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold hover:text-black"><h1 className="text-center">Make Transaction</h1></div>
-        <div className="border rounded-XL p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold hover:text-black"><h1 className="text-center">Transfer Fund</h1></div>
+        <Link to="/OpenAccount"><div className="border rounded-XL p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 bg-black/30 hover:text-2xl hover:font-bold hover:text-black"><h1 className="text-center ">Open Account</h1></div></Link>
+        <div className="border rounded-XL p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black"><h1 className="text-center">Make Transaction</h1></div>
+        <div className="border rounded-XL p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold bg-black/30 hover:text-black"><h1 className="text-center">Transfer Fund</h1></div>
       </div>
       <ToastContainer />
     </div>

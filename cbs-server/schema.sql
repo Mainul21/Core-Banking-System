@@ -26,3 +26,12 @@ CREATE TABLE admins (
     admin_id VARCHAR(20) UNIQUE NOT NULL,
     role_description TEXT
 );
+
+--Added name column to users table
+ALTER TABLE users
+ADD COLUMN name VARCHAR(255);
+
+-- Added phone number and address columns to customers table
+ALTER TABLE users
+ADD COLUMN phone_number VARCHAR(20),
+ADD COLUMN address TEXT;
