@@ -1,4 +1,5 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 const cors = require("cors");
 require("dotenv").config();
 const pool = require("./db");
@@ -40,6 +41,32 @@ app.get("/api/customer-info", async (req, res) => {
 
   }
 });
+
+//update customers password
+app.patch("/api/change-password", async (req, res) => {
+  try {
+    const { id, confirmPassword } = req.body;  // Extract from body
+
+    if (!id || !confirmPassword) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+    const hashedPassword = await bcrypt.hash(confirmPassword, 10);
+    const result = await pool.query(
+      "UPDATE users SET password = $1 WHERE id = $2 RETURNING *",
+      [hashedPassword, id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Database query failed" });
+  }
+});
+
 
 
 app.get("/", (req, res) => {

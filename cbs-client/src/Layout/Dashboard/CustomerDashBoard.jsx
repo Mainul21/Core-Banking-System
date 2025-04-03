@@ -2,10 +2,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { AuthContext } from "../Context/AuthContext";
 import { FaRegEye,FaRegEyeSlash } from "react-icons/fa6";
+import Modal from "react-modal";
 
 const CustomerDashBoard = () => {
   const { user, logout } = useContext(AuthContext);
-  const { name, balance, account_number, email } = user;
+  const { id, name, balance, account_number, email } = user;
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   // State to toggle balance visibility
   const [showBalance, setShowBalance] = useState(false);
@@ -22,6 +24,42 @@ const CustomerDashBoard = () => {
   const toggleBalance = () => {
     setShowBalance(!showBalance);
   };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    // const oldPassword = form.oldPassword.value;
+    const newPassword = form.newPassword.value;
+    const confirmPassword = form.confirmPassword.value;
+  
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match", { position: "top-center" });
+      return;
+    }
+  
+    try {
+      const response = await fetch("http://localhost:5000/api/change-password", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, confirmPassword }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        toast.success(data.message || "Password changed successfully!", { position: "top-center" });
+        setModalIsOpen(false);
+      } else {
+        toast.error(data.error || "Error changing password", { position: "top-center" });
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Server error", { position: "top-center" });
+    }
+  };
+  
 
   return (
     <div className="h-screen flex flex-col items-center justify-center px-4 bg-[url('./cd-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300">
@@ -46,7 +84,7 @@ const CustomerDashBoard = () => {
       >
         Logout
       </button>
-      <button className="btn bg-emerald-500 rounded-xl transition-all duration-300 hover:bg-blue-500 text-black mt-3">
+      <button className="btn bg-emerald-500 rounded-xl transition-all duration-300 hover:bg-blue-500 text-black mt-3" onClick={() => setModalIsOpen(true)}>
         Change Password
       </button>
       </div>
@@ -58,6 +96,52 @@ const CustomerDashBoard = () => {
           <h1 className="text-center">Transfer Fund</h1>
         </div>
       </div>
+      <Modal
+              isOpen={modalIsOpen}
+              onRequestClose={() => setModalIsOpen(false)}
+              className="bg-white p-6 rounded-lg shadow-lg max-w-sm mx-auto text-black"
+              overlayClassName="fixed inset-0 bg-[url('./cd-bg.jpg')] bg-opacity-50 flex justify-center items-center"
+            >
+              <h2 className="text-xl font-bold mb-4">Change Password</h2>
+              <form className="flex flex-col gap-4" onSubmit={handlePasswordChange}>
+                <label className="text-lg font-bold">Old Password:</label>  
+                <input
+                  type="password"
+                  className="input w-full mb-4"
+                  name="oldPassword"
+                  placeholder="Enter Old Password"
+                  required
+                />
+                <label className="text-lg font-bold">New Password</label>
+                <input
+                  type="password"
+                  className="input w-full mb-4"
+                  name="newPassword"
+                  placeholder="Enter New Password"
+                  required
+                />
+                <label className="text-lg font-bold">Confirm Password</label>
+                <input
+                  type="password"
+                  className="input w-full mb-4"
+                  name="confirmPassword"
+                  placeholder="Confirm New Password"
+                  required
+                />
+                <button className="btn btn-neutral w-full mt-4" type="submit">
+                  Change Password
+                </button>
+              </form>
+              <button
+                className="btn btn-danger mt-4"
+                onClick={() => {
+                  setModalIsOpen(false); // Close the modal
+
+                }}
+              >
+                Close
+              </button>
+            </Modal>
       <ToastContainer />
     </div>
   );

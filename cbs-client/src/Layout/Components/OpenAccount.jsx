@@ -159,7 +159,7 @@ const OpenAccount = () => {
         isOpen={modalIsOpen}
         onRequestClose={() => setModalIsOpen(false)}
         className="bg-white p-6 rounded-lg shadow-lg max-w-sm mx-auto text-black"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+        overlayClassName="fixed inset-0 bg-[url('./acc-bg.jpg')] bg-opacity-50 flex justify-center items-center"
       >
         <h2 className="text-xl font-bold mb-4">Account Created Successfully</h2>
         <p>
