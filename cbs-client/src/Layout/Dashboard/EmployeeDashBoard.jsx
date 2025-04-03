@@ -8,7 +8,7 @@ const EmployeeDashBoard = () => {
   const { user, logout} = useContext(AuthContext);
   console.log('login',user.name);
   const {name} =user;
-
+  
 
   useEffect(() => {
     const message = localStorage.getItem("showLoginToast");
@@ -16,14 +16,14 @@ const EmployeeDashBoard = () => {
       toast.success("Login successful!", { position: "top-right" });
       localStorage.removeItem("showLoginToast");
     }
-
+    const token = localStorage.getItem("token");
     const fetchCustomer = async () => {
       try {
         const response = await fetch("http://localhost:5000/api/customer-info", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         const data = await response.json();
@@ -42,6 +42,29 @@ const EmployeeDashBoard = () => {
 
   }, []);
 
+  const handleDelete = async (customerId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`http://localhost:5000/api/customer/${customerId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        toast.success("Customer deleted successfully!", { position: "top-right" });
+        setCustomers(customers.filter(customer => customer.id !== customerId));
+      } else {
+        toast.error("Error deleting customer", { position: "top-right" });
+      }
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      toast.error("Server error", { position: "top-right" });
+    }
+  }
+
+console.log(customers);
 
   return (
     <div className="h-screen flex flex-col items-center justify-center px-4 bg-[url('./emp-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300">
@@ -68,6 +91,7 @@ const EmployeeDashBoard = () => {
                     <td className="p-3 border">{customer.email}</td>
                     <td className="p-3 border">{customer.account_number}</td>
                     <td className="p-3 border">${customer.balance}</td>
+                    <td className="btn bg-emerald-500 p-3 mt-1" onClick={()=>handleDelete(customer.id)}>Delete</td>
                   </tr>
                 ))
               ) : (

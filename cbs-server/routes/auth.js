@@ -10,7 +10,7 @@ router.post("/login", loginUser);
 
 //user route
 // In your backend route (authRoutes.js)
-router.get("/user", authMiddleware(), async (req, res) => {
+router.get("/user", authMiddleware, async (req, res) => {
     try {
         console.log("Fetching user data for ID:", req.user?.id); // Debugging
         console.log("Decoded JWT User Data:", req.user); // Debugging

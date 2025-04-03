@@ -55,6 +55,7 @@ router.post("/", async (req, res) => {
     // Return generated credentials to employee
     res.status(201).json({
       message: "Customer account created successfully",
+      id: userId,
       name: name,
       email: email,
       account_number: accountNumber,

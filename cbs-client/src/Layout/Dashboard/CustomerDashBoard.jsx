@@ -46,6 +46,9 @@ const CustomerDashBoard = () => {
       >
         Logout
       </button>
+      <button className="btn bg-emerald-500 rounded-xl transition-all duration-300 hover:bg-blue-500 text-black mt-3">
+        Change Password
+      </button>
       </div>
       <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">
         <div className="border-4 bg-black/30 border-emerald-700 text-emerald-300 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">

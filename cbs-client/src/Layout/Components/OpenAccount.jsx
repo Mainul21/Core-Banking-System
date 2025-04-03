@@ -64,6 +64,7 @@ const OpenAccount = () => {
       to_email: details.email,
       account_number: details.account_number,
       password: details.password,
+      amount: details.amount,
     };
 
     emailjs
@@ -172,6 +173,9 @@ const OpenAccount = () => {
         </p>
         <p>
           <strong>Password:</strong> {accountDetails?.password}
+        </p>
+        <p>
+          <strong>Balance:</strong> {accountDetails?.amount}
         </p>
         <button
           className="btn btn-danger mt-4"

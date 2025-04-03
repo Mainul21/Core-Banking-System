@@ -4,6 +4,7 @@ require("dotenv").config();
 const pool = require("./db");
 const authRoutes = require("./routes/auth");
 const accountRoutes = require("./routes/openAccount");
+const customerRoutes = require('./routes/deleteCustomerAccount');
 
 const app = express();
 const port = 5000||process.env.PORT;
@@ -18,11 +19,13 @@ app.use(express.json());
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/api/account", accountRoutes);
+app.use('/api/customer', customerRoutes); //Delete customer account route
 
 // customer info for employee dashboard
 app.get("/api/customer-info", async (req, res) => {
   try{
     const result = await pool.query(`SELECT
+              u.id,
               c.account_number, 
               c.balance,
               u.name,
