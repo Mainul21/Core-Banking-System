@@ -6,6 +6,7 @@ const pool = require("./db");
 const authRoutes = require("./routes/auth");
 const accountRoutes = require("./routes/openAccount");
 const customerRoutes = require('./routes/deleteCustomerAccount');
+const transactionRoutes = require("./routes/transaction");
 
 const app = express();
 const port = 5000||process.env.PORT;
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/account", accountRoutes);
 app.use('/api/customer', customerRoutes); //Delete customer account route
+app.use('/api/transaction', transactionRoutes); // Transaction route
 
 // customer info for employee dashboard
 app.get("/api/customer-info", async (req, res) => {
@@ -67,6 +69,29 @@ app.patch("/api/change-password", async (req, res) => {
   }
 });
 
+// Backend (Express.js example)
+app.get("/api/user", async (req, res) => {
+  try {
+      const userEmail = req.query.email;
+      if (!userEmail) {
+          return res.status(400).json({ error: "Missing email" });
+      }
+
+      const user = await pool.query(
+          "SELECT u.id, u.name, u.email, c.account_number, c.balance FROM users u LEFT JOIN customers c ON u.id = c.id WHERE u.email = $1",
+          [userEmail]
+      );
+
+      if (user.rows.length > 0) {
+          res.json(user.rows[0]);
+      } else {
+          res.status(404).json({ error: "User not found" });
+      }
+  } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: "Server error" });
+  }
+});
 
 
 app.get("/", (req, res) => {

@@ -3,15 +3,16 @@ import { createContext, useState, useEffect } from "react";
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
+  const [info, setInfo] = useState(null);
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  const login = (token, role, userData) => {
+  const login = (token, role, userData, userId) => {
     localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify({ role}));
-    setUser({ role, ...userData });
+    localStorage.setItem("user", JSON.stringify({ userId, role, ...userData }));
+    setUser({ userId, role, ...userData });
   };
 
   const logout = () => {
@@ -22,11 +23,27 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
+    if (savedUser) {
+      const parsed = JSON.parse(savedUser);
+      setUser(parsed);
+  
+      if (parsed.email) {
+        fetch(`http://localhost:5000/api/user?email=${parsed.email}`)
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Fetched User:", data);
+            setInfo(data);
+          })
+          .catch((error) => console.error("Error fetching user:", error));
+      } else {
+        console.warn("Email not found in localStorage user");
+      }
+    }
   }, []);
+  
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, info, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

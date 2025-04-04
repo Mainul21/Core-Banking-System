@@ -9,6 +9,7 @@ import EmployeeDashBoard from "./Layout/Dashboard/EmployeeDashBoard";
 import CustomerDashBoard from "./Layout/Dashboard/CustomerDashBoard";
 import { AuthProvider } from "./Layout/Context/AuthContext";
 import ProtectedRoute from "./Layout/Authentication/Protected";
+import Transaction from "./Layout/Components/Transaction";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -29,6 +30,7 @@ createRoot(document.getElementById("root")).render(
         <Route element={<ProtectedRoute allowedRoles={["customer"]} />}>
           <Route path="/customer-dashboard" element={<CustomerDashBoard />} />
         </Route>
+        <Route path="/transactions" element={<Transaction/>} />
       </Routes>
     </AuthProvider>
   </BrowserRouter>

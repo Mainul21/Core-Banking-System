@@ -35,3 +35,24 @@ ADD COLUMN name VARCHAR(255);
 ALTER TABLE users
 ADD COLUMN phone_number VARCHAR(20),
 ADD COLUMN address TEXT;
+
+-- Transactions table with FK reference to users(both customers and employees)
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    transaction_type VARCHAR(50) NOT NULL CHECK (transaction_type IN ('deposit', 'withdrawal')),
+    amount DECIMAL(15, 2) NOT NULL CHECK (amount > 0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- makking accoumt_number unique in customers table
+ALTER TABLE customers ADD CONSTRAINT unique_account_number UNIQUE (account_number);
+
+-- adding account_number to transactions table
+ALTER TABLE transactions 
+ADD COLUMN account_number VARCHAR(20) REFERENCES customers(account_number) ON DELETE SET NULL;
+ALTER TABLE transactions DROP CONSTRAINT transactions_transaction_type_check;
+
+ALTER TABLE transactions ADD CONSTRAINT transactions_transaction_type_check 
+CHECK (transaction_type IN ('deposit', 'withdraw'));

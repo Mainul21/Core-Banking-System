@@ -3,11 +3,13 @@ import { toast, ToastContainer } from "react-toastify";
 import { AuthContext } from "../Context/AuthContext";
 import { FaRegEye,FaRegEyeSlash } from "react-icons/fa6";
 import Modal from "react-modal";
+import { useNavigate } from "react-router";
 
 const CustomerDashBoard = () => {
   const { user, logout } = useContext(AuthContext);
   const { id, name, balance, account_number, email } = user;
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   // State to toggle balance visibility
   const [showBalance, setShowBalance] = useState(false);
@@ -90,7 +92,7 @@ const CustomerDashBoard = () => {
       </div>
       <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">
         <div className="border-4 bg-black/30 border-emerald-700 text-emerald-300 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
-          <h1 className="text-center  ">Make Transaction</h1>
+          <button onClick={() => navigate('/transactions')} className="text-center">Make Transaction</button>
         </div>
         <div className="border-4 bg-white/30 border-emerald-700 text-emerald-700 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
           <h1 className="text-center">Transfer Fund</h1>

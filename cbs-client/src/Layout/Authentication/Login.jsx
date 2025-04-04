@@ -33,7 +33,7 @@ const Login = () => {
         localStorage.setItem("token", data.token);
         // localStorage.setItem("user", JSON.stringify(data.user)); // Store user details
         localStorage.setItem("showLoginToast", "true"); // for toast
-        login(data.token, data.role, data.user);
+        login(data.token, data.role, data.user, data.id);
         // console.log(data.role);
       } else {
         console.error("Token missing from API response");
