@@ -44,6 +44,99 @@ app.get("/api/customer-info", async (req, res) => {
   }
 });
 
+// Get all employees
+app.get("/api/employees", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        u.id, 
+        u.name, 
+        u.email 
+      FROM users u 
+      WHERE u.role = 'employee'
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Database query failed");
+  }
+});
+
+// Get all user accounts with role
+app.get("/api/allAccounts", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        u.id, 
+        u.name, 
+        u.email, 
+        u.role, 
+        c.account_number, 
+        c.balance
+      FROM users u
+      RIGHT JOIN customers c ON u.id = c.id
+      ORDER BY u.role
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Database query failed");
+  }
+});
+
+
+//Get transaction history for admin dashboard
+app.get("/api/transaction-history", async (req, res) => {
+  try {
+    // Get all transactions with user role and name
+    const transactionsQuery = `
+      SELECT 
+        t.*, 
+        u.name, 
+        u.role 
+      FROM transactions t
+      JOIN users u ON t.user_id = u.id
+      ORDER BY t.created_at DESC
+    `;
+    const transactionsResult = await pool.query(transactionsQuery);
+
+    // Calculate total deposit
+    const totalDepositQuery = `
+      SELECT COALESCE(SUM(amount), 0) AS total_deposit 
+      FROM transactions 
+      WHERE transaction_type = 'deposit'
+    `;
+    const totalDepositResult = await pool.query(totalDepositQuery);
+
+    // Calculate total withdrawal
+    const totalWithdrawalQuery = `
+      SELECT COALESCE(SUM(amount), 0) AS total_withdrawal 
+      FROM transactions 
+      WHERE transaction_type = 'withdraw'
+    `;
+    const totalWithdrawalResult = await pool.query(totalWithdrawalQuery);
+
+    // Calculate total money in bank (sum of all customer balances)
+    const totalBankBalanceQuery = `
+      SELECT COALESCE(SUM(balance), 0) AS total_bank_balance 
+      FROM customers
+    `;
+    const totalBankBalanceResult = await pool.query(totalBankBalanceQuery);
+
+    res.json({
+      transactions: transactionsResult.rows,
+      total_deposit: totalDepositResult.rows[0].total_deposit,
+      total_withdrawal: totalWithdrawalResult.rows[0].total_withdrawal,
+      total_bank_balance: totalBankBalanceResult.rows[0].total_bank_balance,
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Database query failed");
+  }
+});
+
+
+
 //update customers password
 app.patch("/api/change-password", async (req, res) => {
   try {
@@ -69,7 +162,7 @@ app.patch("/api/change-password", async (req, res) => {
   }
 });
 
-// Backend (Express.js example)
+//get user info for transaction
 app.get("/api/user", async (req, res) => {
   try {
       const userEmail = req.query.email;
