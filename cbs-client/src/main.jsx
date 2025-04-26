@@ -10,6 +10,7 @@ import CustomerDashBoard from "./Layout/Dashboard/CustomerDashBoard";
 import { AuthProvider } from "./Layout/Context/AuthContext";
 import ProtectedRoute from "./Layout/Authentication/Protected";
 import Transaction from "./Layout/Components/Transaction";
+import FundTransfer from "./Layout/Components/FundTransfer";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -31,6 +32,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="/customer-dashboard" element={<CustomerDashBoard />} />
         </Route>
         <Route path="/transactions" element={<Transaction/>} />
+        <Route path="/fund-transfer" element={<FundTransfer/>} />
       </Routes>
     </AuthProvider>
   </BrowserRouter>

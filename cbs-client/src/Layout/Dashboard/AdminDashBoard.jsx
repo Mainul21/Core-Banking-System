@@ -55,20 +55,20 @@ const AdminDashBoard = () => {
       {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <div className="bg-transparent shadow rounded-2xl p-4">
-          <h2 className="text-lg font-semibold">Total Deposits</h2>
-          <p className="text-green-600 text-2xl font-bold">
+          <h2 className="text-lg font-semibold text-center">Total Deposits</h2>
+          <p className="text-green-600 text-2xl font-bold text-center">
             ৳ {parseFloat(data.total_deposit).toFixed(2)}
           </p>
         </div>
         <div className="bg-transparent shadow rounded-2xl p-4">
-          <h2 className="text-lg font-semibold">Total Withdrawals</h2>
-          <p className="text-red-600 text-2xl font-bold">
+          <h2 className="text-lg font-semibold text-center">Total Withdrawals</h2>
+          <p className="text-red-600 text-2xl font-bold text-center">
             ৳ {parseFloat(data.total_withdrawal).toFixed(2)}
           </p>
         </div>
         <div className="bg-transparent shadow rounded-2xl p-4">
-          <h2 className="text-lg font-semibold">Total Bank Balance</h2>
-          <p className="text-blue-600 text-2xl font-bold">
+          <h2 className="text-lg font-semibold text-center">Total Bank Balance</h2>
+          <p className="text-blue-600 text-2xl font-bold text-center">
             ৳ {parseFloat(data.total_bank_balance).toFixed(2)}
           </p>
         </div>
@@ -87,8 +87,8 @@ const AdminDashBoard = () => {
 
       {showTransactions && (
         <div className="overflow-x-auto bg-transparent shadow rounded-2xl p-4 mb-8">
-          <table className="min-w-full text-sm text-left">
-            <thead className="bg-emerald-500 text-white">
+          <table className="min-w-full text-sm text-center">
+            <thead className="bg-emerald-500 text-white text-center">
               <tr>
                 <th className="px-4 py-2">Name</th>
                 <th className="px-4 py-2">Role</th>
@@ -136,7 +136,7 @@ const AdminDashBoard = () => {
       </div>
       {showEmployees && (
         <div className="overflow-x-auto bg-transparent shadow rounded-2xl p-4 mb-8">
-          <table className="min-w-full text-sm text-left">
+          <table className="min-w-full text-sm text-center">
             <thead className="bg-emerald-500 text-white">
               <tr>
                 <th className="px-4 py-2">Name</th>
@@ -173,7 +173,7 @@ const AdminDashBoard = () => {
       </div>
       {showCustomers && (
         <div className="overflow-x-auto bg-transparent shadow rounded-2xl p-4 mb-8">
-          <table className="min-w-full text-sm text-left">
+          <table className="min-w-full text-sm text-center">
             <thead className="bg-emerald-500 text-white">
               <tr>
                 <th className="px-4 py-2">Name</th>

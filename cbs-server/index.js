@@ -5,15 +5,14 @@ require("dotenv").config();
 const pool = require("./db");
 const authRoutes = require("./routes/auth");
 const accountRoutes = require("./routes/openAccount");
-const customerRoutes = require('./routes/deleteCustomerAccount');
+const customerRoutes = require("./routes/deleteCustomerAccount");
 const transactionRoutes = require("./routes/transaction");
-const customerTransaction = require("./routes/customerTransaction"); 
-
+const customerTransaction = require("./routes/customerTransaction");
+const fundTransferRoutes = require("./routes/fundTransfer"); // fund transfer route
 const app = express();
-const port = 5000||process.env.PORT;
+const port = 5000 || process.env.PORT;
 
 // middleware
-
 
 app.use(cors({ origin: "*", credentials: true }));
 
@@ -22,14 +21,14 @@ app.use(express.json());
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/api/account", accountRoutes);
-app.use('/api/customer', customerRoutes); //Delete customer account route
-app.use('/api/transaction', transactionRoutes); // Transaction route
-app.use('/api/customer-transaction', customerTransaction); // customer transaction route
-
+app.use("/api/customer", customerRoutes); //Delete customer account route
+app.use("/api/transaction", transactionRoutes); // Transaction route
+app.use("/api/customer-transaction", customerTransaction); // customer transaction route
+app.use("/api/fund-transfer", fundTransferRoutes); // fund transfer route
 
 // customer info for employee dashboard
 app.get("/api/customer-info", async (req, res) => {
-  try{
+  try {
     const result = await pool.query(`SELECT
               u.id,
               c.account_number, 
@@ -40,10 +39,9 @@ app.get("/api/customer-info", async (req, res) => {
        LEFT JOIN customers c ON u.id = c.id
        where u.role = 'customer'`);
     res.json(result.rows);
-  }catch(err){
+  } catch (err) {
     console.error(err.message);
     res.status(500).send("Database query failed");
-
   }
 });
 
@@ -86,7 +84,6 @@ app.get("/api/allAccounts", async (req, res) => {
     res.status(500).send("Database query failed");
   }
 });
-
 
 //Get transaction history for admin dashboard
 app.get("/api/transaction-history", async (req, res) => {
@@ -138,12 +135,10 @@ app.get("/api/transaction-history", async (req, res) => {
   }
 });
 
-
-
 //update customers password
 app.patch("/api/change-password", async (req, res) => {
   try {
-    const { id, confirmPassword } = req.body;  // Extract from body
+    const { id, confirmPassword } = req.body; // Extract from body
 
     if (!id || !confirmPassword) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -168,42 +163,81 @@ app.patch("/api/change-password", async (req, res) => {
 //get user info for transaction
 app.get("/api/user", async (req, res) => {
   try {
-      const userEmail = req.query.email;
-      if (!userEmail) {
-          return res.status(400).json({ error: "Missing email" });
-      }
+    const userEmail = req.query.email;
+    if (!userEmail) {
+      return res.status(400).json({ error: "Missing email" });
+    }
 
-      const user = await pool.query(
-          "SELECT u.id, u.name, u.email, c.account_number, c.balance FROM users u LEFT JOIN customers c ON u.id = c.id WHERE u.email = $1",
-          [userEmail]
-      );
+    const user = await pool.query(
+      "SELECT u.id, u.name, u.email, c.account_number, c.balance FROM users u LEFT JOIN customers c ON u.id = c.id WHERE u.email = $1",
+      [userEmail]
+    );
 
-      if (user.rows.length > 0) {
-          res.json(user.rows[0]);
-      } else {
-          res.status(404).json({ error: "User not found" });
-      }
+    if (user.rows.length > 0) {
+      res.json(user.rows[0]);
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
   } catch (err) {
-      console.error(err.message);
-      res.status(500).json({ error: "Server error" });
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
+//fund transfer history for all users
+// Get fund transfers with optional filters (role and id)
+app.get("/api/fund-transfers", async (req, res) => {
+  try {
+    const { role, id } = req.query;
+
+    let query = `
+      SELECT 
+    ft.id,
+    ft.sender_id,
+    sender.name AS sender_name,
+    ft.sender_account_number,
+    ft.receiver_account_number,
+    ft.amount,
+    ft.status,
+    approver.name AS approved_by_name,
+    ft.requested_at,
+    ft.approved_at
+FROM fund_transfers ft
+LEFT JOIN users sender ON ft.sender_id = sender.id
+LEFT JOIN users approver ON ft.approved_by = approver.id
+
+    `;
+
+    // Add WHERE clauses based on role
+    if (role === "customer" && id) {
+      query += ` WHERE ft.sender_id = ${id}`; // fetch only this customer's transfers
+    } else if (role === "employee") {
+      query += ` WHERE ft.status = 'pending'`; // fetch pending approvals
+    }
+
+    query += ` ORDER BY ft.requested_at DESC`;
+
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Failed to fetch fund transfers");
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("CBS SERVER IS RUNNING");
 });
 
 app.get("/test-db", async (req, res) => {
-    try {
-      const result = await pool.query("SELECT NOW();"); // Fetch current timestamp
-      res.json(result.rows);
-    } catch (err) {
-      console.error(err);
-      res.status(500).send("Database query failed");
-    }
-  });
-  
+  try {
+    const result = await pool.query("SELECT NOW();"); // Fetch current timestamp
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Database query failed");
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

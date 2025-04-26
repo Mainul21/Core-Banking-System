@@ -56,3 +56,18 @@ ALTER TABLE transactions DROP CONSTRAINT transactions_transaction_type_check;
 
 ALTER TABLE transactions ADD CONSTRAINT transactions_transaction_type_check 
 CHECK (transaction_type IN ('deposit', 'withdraw'));
+
+-- fund transfer table with FK reference to users(both customers and employees)
+CREATE TABLE fund_transfers (
+    id SERIAL PRIMARY KEY,
+    sender_id INT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+    receiver_account_number VARCHAR(20) NOT NULL REFERENCES customers(account_number) ON DELETE CASCADE,
+    amount DECIMAL(15, 2) NOT NULL CHECK (amount > 0),
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approved_by INT REFERENCES employees(id) ON DELETE SET NULL,
+    approved_at TIMESTAMP
+);
+
+ALTER TABLE fund_transfers
+ADD COLUMN sender_account_number VARCHAR(20) REFERENCES customers(account_number) ON DELETE CASCADE;

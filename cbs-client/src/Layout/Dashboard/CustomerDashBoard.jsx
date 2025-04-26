@@ -3,7 +3,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { AuthContext } from "../Context/AuthContext";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import Modal from "react-modal";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const CustomerDashBoard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -210,9 +210,11 @@ const CustomerDashBoard = () => {
         <div className="border-4 bg-black/30 border-emerald-700 text-emerald-300 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
           <button onClick={() => navigate("/transactions")} className="text-center">Make Transaction</button>
         </div>
-        <div className="border-4 bg-white/30 border-emerald-700 text-emerald-700 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
+        <Link to='/fund-transfer'>
+        <div className="border-4 bg-white/30 border-emerald-700 text-emerald-900 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
           <h1 className="text-center">Transfer Fund</h1>
         </div>
+        </Link>
       </div>
 
       {/* Modal for changing password */}
