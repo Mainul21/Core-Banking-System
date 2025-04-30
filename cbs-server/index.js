@@ -185,49 +185,25 @@ app.get("/api/user", async (req, res) => {
 });
 
 //fund transfer history for all users
-// Get fund transfers with optional filters (role and id)
-app.get("/api/fund-transfers", async (req, res) => {
-  try {
-    const { role, id } = req.query;
-
-    let query = `
+app.get("/api/allFundTransfers", async (req, res) => {
+  try{
+    const result = await pool.query(`
       SELECT 
-    ft.id,
-    ft.sender_id,
-    sender.name AS sender_name,
-    ft.sender_account_number,
-    ft.receiver_account_number,
-    ft.amount,
-    ft.status,
-    approver.name AS approved_by_name,
-    ft.requested_at,
-    ft.approved_at
-FROM fund_transfers ft
-LEFT JOIN users sender ON ft.sender_id = sender.id
-LEFT JOIN users approver ON ft.approved_by = approver.id
-
-    `;
-
-    // Add WHERE clauses based on role
-    if (role === "customer" && id) {
-      query += ` WHERE ft.sender_id = ${id}`; // fetch only this customer's transfers
-    } else if (role === "employee") {
-      query += ` WHERE ft.status = 'pending'`; // fetch pending approvals
-    }
-
-    query += ` ORDER BY ft.requested_at DESC`;
-
-    const result = await pool.query(query);
+        ft.* 
+      FROM fund_transfers ft
+      ORDER BY ft.requested_at DESC
+    `);
     res.json(result.rows);
-  } catch (err) {
+  }catch (err) {
     console.error(err.message);
-    res.status(500).send("Failed to fetch fund transfers");
-  }
+    res.status(500).send("Database query failed");
+  };
 });
 
 app.get("/", (req, res) => {
   res.send("CBS SERVER IS RUNNING");
 });
+
 
 app.get("/test-db", async (req, res) => {
   try {

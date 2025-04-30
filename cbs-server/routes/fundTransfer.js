@@ -119,4 +119,91 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+router.get('/pending', authenticateToken, async (req, res) => {
+  const user = req.user;
+  if (user.role !== 'employee') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM fund_transfers WHERE status = $1 ORDER BY requested_at DESC',
+      ['pending']
+    );
+    res.json({ pendingTransfers: result.rows });
+  } catch (err) {
+    console.error('Error fetching pending transfers:', err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.put('/approve/:id', authenticateToken, async (req, res) => {
+  const user = req.user;
+  if (user.role !== 'employee') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+
+  const transferId = req.params.id;
+  let transactionStarted = false;
+
+  try {
+    // Start transaction
+    await pool.query('BEGIN');
+    transactionStarted = true;
+    console.log(transferId)
+    const transferQuery = await pool.query(
+      'SELECT * FROM fund_transfers WHERE id = $1 AND status = $2',
+      [transferId, 'pending']
+    );
+
+    if (transferQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Pending transfer not found' });
+    }
+
+    const transfer = transferQuery.rows[0];
+
+    // Check sender balance
+    const senderQuery = await pool.query(
+      'SELECT balance FROM customers WHERE account_number = $1',
+      [transfer.sender_account_number]
+    );
+
+    const sender = senderQuery.rows[0];
+    if (!sender || parseFloat(sender.balance) < parseFloat(transfer.amount)) {
+      await pool.query('ROLLBACK');
+      return res.status(400).json({ error: 'Insufficient balance for sender' });
+    }
+
+    // Deduct from sender
+    await pool.query(
+      'UPDATE customers SET balance = balance - $1 WHERE account_number = $2',
+      [transfer.amount, transfer.sender_account_number]
+    );
+
+    // Credit to receiver
+    await pool.query(
+      'UPDATE customers SET balance = balance + $1 WHERE account_number = $2',
+      [transfer.amount, transfer.receiver_account_number]
+    );
+
+    // Update transfer status
+    await pool.query(
+      `UPDATE fund_transfers 
+       SET status = 'approved', approved_by = $1, approved_at = CURRENT_TIMESTAMP 
+       WHERE id = $2`,
+      [user.id, transferId]
+    );
+
+    await pool.query('COMMIT');
+    res.json({ message: 'Transfer approved and completed' });
+
+  } catch (err) {
+    if (transactionStarted) await pool.query('ROLLBACK');
+    console.error('Error approving transfer:', err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+
 module.exports = router;

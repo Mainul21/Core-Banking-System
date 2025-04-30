@@ -2,14 +2,15 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../Context/AuthContext";
 
 const AdminDashBoard = () => {
-
-  const {logout} = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const [data, setData] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [showTransactions, setShowTransactions] = useState(false);
   const [showCustomers, setShowCustomers] = useState(false);
   const [showEmployees, setShowEmployees] = useState(false);
+  const [showFundTransfer, setShowFundTransfer] = useState(false);
+  const [transfers, setTransfers] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,11 +20,11 @@ const AdminDashBoard = () => {
           fetch("http://localhost:5000/api/employees"),
           fetch("http://localhost:5000/api/allAccounts"),
         ]);
-  
+
         const txData = await txRes.json();
         const empData = await empRes.json();
         const custData = await custRes.json();
-  
+
         setData(txData);
         setEmployees(empData);
         setCustomers(custData);
@@ -31,12 +32,23 @@ const AdminDashBoard = () => {
         console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
   }, []);
-  
 
-    
+  useEffect(() => {
+    const fetchFundTransfers = async () => {
+      try {
+        const ft = await fetch("http://localhost:5000/api/allFundTransfers");
+        const ftData = await ft.json();
+        setTransfers(ftData);
+      } catch (error) {
+        console.error("Error fetching fund transfers:", error);
+      }
+    };
+
+    fetchFundTransfers();
+  }, []);
 
   if (!data) return <div className="text-center p-10">Loading...</div>;
 
@@ -45,12 +57,15 @@ const AdminDashBoard = () => {
       <h1 className="text-3xl font-bold mb-6 text-center text-emerald-500">
         Admin Dashboard
       </h1>
-      <div className="flex justify-center">
-  <button className="btn bg-emerald-500 hover:bg-red-500 p-4" onClick={logout}>
-    Logout
-  </button>
-</div>
 
+      <div className="flex justify-center mb-6">
+        <button
+          className="btn bg-emerald-500 hover:bg-red-500 p-4"
+          onClick={logout}
+        >
+          Logout
+        </button>
+      </div>
 
       {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -61,50 +76,54 @@ const AdminDashBoard = () => {
           </p>
         </div>
         <div className="bg-transparent shadow rounded-2xl p-4">
-          <h2 className="text-lg font-semibold text-center">Total Withdrawals</h2>
+          <h2 className="text-lg font-semibold text-center">
+            Total Withdrawals
+          </h2>
           <p className="text-red-600 text-2xl font-bold text-center">
             ৳ {parseFloat(data.total_withdrawal).toFixed(2)}
           </p>
         </div>
         <div className="bg-transparent shadow rounded-2xl p-4">
-          <h2 className="text-lg font-semibold text-center">Total Bank Balance</h2>
+          <h2 className="text-lg font-semibold text-center">
+            Total Bank Balance
+          </h2>
           <p className="text-blue-600 text-2xl font-bold text-center">
             ৳ {parseFloat(data.total_bank_balance).toFixed(2)}
           </p>
         </div>
       </div>
 
-      {/* Transactions Section */}
+      {/* Toggle Buttons and Tables */}
+      {/* Transactions */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Transactions</h2>
         <button
           onClick={() => setShowTransactions((prev) => !prev)}
-          className="bg-emerald-500 hover:bg-emerald-600 text-black px-4 py-2 rounded-lg transition-all"
+          className="bg-emerald-500 hover:bg-emerald-600 text-black px-4 py-2 rounded-lg"
         >
           {showTransactions ? "Hide Table" : "Show Table"}
         </button>
       </div>
-
       {showTransactions && (
         <div className="overflow-x-auto bg-transparent shadow rounded-2xl p-4 mb-8">
           <table className="min-w-full text-sm text-center">
-            <thead className="bg-emerald-500 text-white text-center">
+            <thead className="bg-emerald-500 text-white">
               <tr>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">Role</th>
-                <th className="px-4 py-2">Type</th>
-                <th className="px-4 py-2">Amount</th>
-                <th className="px-4 py-2">Account Number</th>
-                <th className="px-4 py-2">Date</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Account #</th>
+                <th>Date</th>
               </tr>
             </thead>
             <tbody>
               {data.transactions.map((tx) => (
                 <tr key={tx.id} className="border-t hover:bg-gray-50 hover:text-black">
-                  <td className="px-4 py-2">{tx.name}</td>
-                  <td className="px-4 py-2 capitalize">{tx.role}</td>
+                  <td>{tx.name}</td>
+                  <td className="capitalize">{tx.role}</td>
                   <td
-                    className={`px-4 py-2 font-semibold ${
+                    className={`font-semibold ${
                       tx.transaction_type === "deposit"
                         ? "text-green-600"
                         : "text-red-600"
@@ -112,11 +131,9 @@ const AdminDashBoard = () => {
                   >
                     {tx.transaction_type}
                   </td>
-                  <td className="px-4 py-2">৳ {parseFloat(tx.amount).toFixed(2)}</td>
-                  <td className="px-4 py-2">{tx.account_number || "N/A"}</td>
-                  <td className="px-4 py-2">
-                    {new Date(tx.created_at).toLocaleString()}
-                  </td>
+                  <td>৳ {parseFloat(tx.amount).toFixed(2)}</td>
+                  <td>{tx.account_number || "N/A"}</td>
+                  <td>{new Date(tx.created_at).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -124,7 +141,7 @@ const AdminDashBoard = () => {
         </div>
       )}
 
-      {/* Employee Info Table */}
+      {/* Employees */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Employees</h2>
         <button
@@ -139,17 +156,17 @@ const AdminDashBoard = () => {
           <table className="min-w-full text-sm text-center">
             <thead className="bg-emerald-500 text-white">
               <tr>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">Email</th>
-                <th className="px-4 py-2">Actions</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {employees?.map((emp) => (
+              {employees.map((emp) => (
                 <tr key={emp.id} className="border-t hover:bg-gray-50 hover:text-black">
-                  <td className="px-4 py-2">{emp.name}</td>
-                  <td className="px-4 py-2">{emp.email}</td>
-                  <td className="px-4 py-2">
+                  <td>{emp.name}</td>
+                  <td>{emp.email}</td>
+                  <td>
                     <button className="text-red-600 hover:underline">
                       Delete
                     </button>
@@ -161,7 +178,7 @@ const AdminDashBoard = () => {
         </div>
       )}
 
-      {/* Customer Info Table */}
+      {/* Customers */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Customers</h2>
         <button
@@ -176,24 +193,81 @@ const AdminDashBoard = () => {
           <table className="min-w-full text-sm text-center">
             <thead className="bg-emerald-500 text-white">
               <tr>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">Email</th>
-                <th className="px-4 py-2">Account #</th>
-                <th className="px-4 py-2">Balance</th>
-                <th className="px-4 py-2">Actions</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Account #</th>
+                <th>Balance</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {customers?.map((cust) => (
+              {customers.map((cust) => (
                 <tr key={cust.id} className="border-t hover:bg-gray-50 hover:text-black">
-                  <td className="px-4 py-2">{cust.name}</td>
-                  <td className="px-4 py-2">{cust.email}</td>
-                  <td className="px-4 py-2">{cust.account_number}</td>
-                  <td className="px-4 py-2">৳ {parseFloat(cust.balance).toFixed(2)}</td>
-                  <td className="px-4 py-2">
+                  <td>{cust.name}</td>
+                  <td>{cust.email}</td>
+                  <td>{cust.account_number}</td>
+                  <td>৳ {parseFloat(cust.balance).toFixed(2)}</td>
+                  <td>
                     <button className="text-red-600 hover:underline">
                       Delete
                     </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Fund Transfers */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Fund Transfers</h2>
+        <button
+          onClick={() => setShowFundTransfer((prev) => !prev)}
+          className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg"
+        >
+          {showFundTransfer ? "Hide Transfers" : "Show Transfers"}
+        </button>
+      </div>
+      {showFundTransfer && (
+        <div className="overflow-x-auto bg-transparent shadow rounded-2xl p-4 mb-8">
+          <table className="min-w-full text-sm text-center">
+            <thead className="bg-emerald-500 text-white">
+              <tr>
+                <th>ID</th>
+                <th>Sender Account #</th>
+                <th>Receiver Account #</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Requested At</th>
+                <th>Approved By</th>
+                <th>Approved At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transfers.map((ft) => (
+                <tr key={ft.id} className="border-t hover:bg-gray-50 hover:text-black">
+                  <td>{ft.id}</td>
+                  <td>{ft.sender_account_number}</td>
+                  <td>{ft.receiver_account_number}</td>
+                  <td>৳ {parseFloat(ft.amount).toFixed(2)}</td>
+                  <td
+                    className={`capitalize font-bold ${
+                      ft.status === "approved"
+                        ? "text-green-600"
+                        : ft.status === "pending"
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {ft.status}
+                  </td>
+                  <td>{new Date(ft.requested_at).toLocaleString()}</td>
+                  <td>{ft.approved_by || "N/A"}</td>
+                  <td>
+                    {ft.approved_at
+                      ? new Date(ft.approved_at).toLocaleString()
+                      : "Pending"}
                   </td>
                 </tr>
               ))}

@@ -1,6 +1,5 @@
 import { ToastContainer, toast } from "react-toastify";
-import React from "react";
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Context/AuthContext";
 import { Link } from "react-router";
 
@@ -9,6 +8,7 @@ const EmployeeDashBoard = () => {
   const [customers, setCustomers] = useState([]);
   const [openRow, setOpenRow] = useState(null);
   const [showTable, setShowTable] = useState(false);
+  const [pendingTransfers, setPendingTransfers] = useState([]);
   const { user, logout } = useContext(AuthContext);
   const { name } = user;
 
@@ -20,12 +20,11 @@ const EmployeeDashBoard = () => {
     }
 
     const token = localStorage.getItem("token");
+
     const fetchCustomer = async () => {
       try {
         const response = await fetch("http://localhost:5000/api/customer-info", {
-          method: "GET",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
@@ -38,8 +37,27 @@ const EmployeeDashBoard = () => {
       }
     };
 
+    const fetchPendingTransfers = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/fund-transfer/pending", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        setPendingTransfers(data.pendingTransfers);
+      } catch (error) {
+        toast.error("Failed to load pending transfers", error, { position: "top-right" });
+      }
+    };
+
     fetchCustomer();
-    const interval = setInterval(fetchCustomer, 15000);
+    fetchPendingTransfers();
+    const interval = setInterval(() => {
+      fetchCustomer();
+      fetchPendingTransfers();
+    }, 15000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -49,18 +67,37 @@ const EmployeeDashBoard = () => {
       const response = await fetch(`http://localhost:5000/api/customer/${customerId}`, {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
       if (response.ok) {
         toast.success("Customer deleted successfully!", { position: "top-right" });
-        setCustomers(customers.filter((customer) => customer.id !== customerId));
+        setCustomers(customers.filter((c) => c.id !== customerId));
       } else {
         toast.error("Error deleting customer", { position: "top-right" });
       }
     } catch (error) {
-      toast.error(error, { position: "top-right" });
+      toast.error(error.message, { position: "top-right" });
+    }
+  };
+
+  const handleApproveTransfer = async (transferId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`http://localhost:5000/api/fund-transfer/approve/${transferId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        toast.success("Transfer approved!", { position: "top-right" });
+        setPendingTransfers(pendingTransfers.filter((t) => t.id !== transferId));
+      } else {
+        toast.error("Failed to approve transfer", { position: "top-right" });
+      }
+    } catch (error) {
+      toast.error(error.message, { position: "top-right" });
     }
   };
 
@@ -73,6 +110,7 @@ const EmployeeDashBoard = () => {
       <h1 className="text-center mb-6 text-3xl font-bold bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">
         Welcome {name}
       </h1>
+
       <button
         className="btn mb-4 bg-emerald-500 rounded-xl transition-all duration-300 hover:bg-red-500 text-black"
         onClick={logout}
@@ -147,6 +185,43 @@ const EmployeeDashBoard = () => {
         )
       )}
 
+      {/* 🚀 Pending Transfers Table */}
+      <div className="w-full max-w-4xl bg-black/30 mt-6 p-4 rounded-xl">
+        <h2 className="text-xl font-bold text-white mb-4">Pending Fund Transfers</h2>
+        {pendingTransfers.length === 0 ? (
+          <p className="text-white">No pending transfers.</p>
+        ) : (
+          <table className="w-full border border-gray-700">
+            <thead>
+              <tr className="bg-gray-900 text-white">
+                <th className="p-3 border">Sender</th>
+                <th className="p-3 border">Receiver</th>
+                <th className="p-3 border">Amount</th>
+                <th className="p-3 border">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingTransfers.map((t) => (
+                <tr key={t.id} className="bg-gray-800 text-white border border-gray-700 text-center">
+                  <td className="p-3 border">{t.sender_account_number}</td>
+                  <td className="p-3 border">{t.receiver_account_number}</td>
+                  <td className="p-3 border">${t.amount}</td>
+                  <td className="p-3 border">
+                    <button
+                      className="bg-emerald-500 hover:bg-green-700 text-black font-bold py-1 px-3 rounded"
+                      onClick={() => handleApproveTransfer(t.id)}
+                    >
+                      Approve
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Feature Cards */}
       <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">
         <Link to="/OpenAccount">
           <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 bg-black/30 hover:text-2xl hover:font-bold hover:text-black">
@@ -157,9 +232,9 @@ const EmployeeDashBoard = () => {
           <h1 className="text-center">Make Transaction</h1>
         </div>
         <Link to="/fund-transfer">
-        <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold bg-black/30 hover:text-black">
-          <h1 className="text-center">Transfer Fund</h1>
-        </div>
+          <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold bg-black/30 hover:text-black">
+            <h1 className="text-center">Transfer Fund</h1>
+          </div>
         </Link>
       </div>
 
