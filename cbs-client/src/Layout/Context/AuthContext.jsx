@@ -32,7 +32,6 @@ const AuthProvider = ({ children }) => {
           .then((res) => res.json())
           .then((data) => {
             console.log("Fetched User:", data);
-            setInfo(data);
           })
           .catch((error) => console.error("Error fetching user:", error));
       } else {
@@ -43,7 +42,7 @@ const AuthProvider = ({ children }) => {
   
 
   return (
-    <AuthContext.Provider value={{ user, info, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout,setInfo, info }}>
       {children}
     </AuthContext.Provider>
   );

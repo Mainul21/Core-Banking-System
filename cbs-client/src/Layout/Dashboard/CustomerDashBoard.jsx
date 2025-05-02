@@ -6,7 +6,7 @@ import Modal from "react-modal";
 import { Link, useNavigate } from "react-router";
 
 const CustomerDashBoard = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout,info } = useContext(AuthContext);
   const { id, name, balance, account_number, email } = user;
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
@@ -16,7 +16,7 @@ const CustomerDashBoard = () => {
   const [fromDate, setFromDate] = useState(""); // For start date filter
   const [toDate, setToDate] = useState(""); // For end date filter
   const navigate = useNavigate();
-
+  console.log(info)
   useEffect(() => {
     const message = localStorage.getItem("showLoginToast");
     if (message === "true") {
@@ -90,7 +90,7 @@ const CustomerDashBoard = () => {
       toast.error("Server error", { position: "top-center" });
     }
   };
-
+  if (!user) return <div className="text-white text-center mt-10">Loading...</div>;
   return (
     <div className="h-fit min-h-screen flex flex-col items-center justify-center px-4 py-10 bg-[url('./cd-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300">
       <h1 className="text-center mb-6 text-3xl font-bold">Welcome, {name}</h1>
@@ -100,7 +100,8 @@ const CustomerDashBoard = () => {
         <h1 className="text-center mb-6 text-xl font-bold">Account Number: {account_number}</h1>
         <div className="flex justify-center items-center gap-2">
           <h1 className="text-center mb-6 text-xl font-bold">
-            Balance: {showBalance ? balance : "****"}
+            Balance: {showBalance ? (info? info:balance ) : "****"}
+            {/* Balance: {showBalance ? balance  : "****"} */}
           </h1>
           <button
             className="btn bg-emerald-500 rounded-xl text-black"

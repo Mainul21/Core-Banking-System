@@ -79,7 +79,7 @@ router.post("/", async (req, res) => {
     );
     console.log("Transaction inserted:", insertResult.rowCount > 0);
 
-    return res.status(200).json({ success: true, message: "Transaction completed successfully" });
+    return res.status(200).json({ success: true, message: "Transaction completed successfully", newBalance: updatedBalance });
 
   } catch (error) {
     console.error("Transaction error:", error);
