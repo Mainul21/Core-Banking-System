@@ -26,6 +26,34 @@ app.use("/api/transaction", transactionRoutes); // Transaction route
 app.use("/api/customer-transaction", customerTransaction); // customer transaction route
 app.use("/api/fund-transfer", fundTransferRoutes); // fund transfer route
 
+
+// Audit Logs
+// Get audit logs for admin dashboard
+app.get("/api/audit-logs", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        al.id,
+        al.user_id,
+        u.name AS user_name,
+        u.role AS user_role,
+        al.action,
+        al.target_type,
+        al.target_id,
+        al.metadata,
+        al.timestamp
+      FROM audit_logs al
+      JOIN users u ON al.user_id = u.id
+      ORDER BY al.timestamp DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Database query failed");
+  }
+});
+
+
 // customer info for employee dashboard
 app.get("/api/customer-info", async (req, res) => {
   try {

@@ -1,6 +1,7 @@
 const express = require("express");
 const pool = require("../db");
 const bcrypt = require("bcryptjs");
+const logAudit = require("../auditLogger"); // Add this line at the top
 
 const router = express.Router();
 
@@ -12,7 +13,8 @@ const generateAccountNumber = () => {
 
 // Function to generate a random password (Employees will share it with the customer)
 const generatePassword = () => {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%";
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%";
   let password = "";
   for (let i = 0; i < 8; i++) {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -26,7 +28,10 @@ router.post("/", async (req, res) => {
     const { name, email, address, phone, amount } = req.body;
 
     // Check if the email is already registered
-    const existingUser = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    const existingUser = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
     if (existingUser.rows.length > 0) {
       return res.status(400).json({ error: "Email already exists" });
     }
@@ -40,7 +45,6 @@ router.post("/", async (req, res) => {
       "INSERT INTO users (name, email, phone_number, address, password, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
       [name, email, phone, address, hashedPassword, "customer"]
     );
-    
 
     const userId = newUser.rows[0].id;
     const accountNumber = generateAccountNumber();
@@ -51,6 +55,20 @@ router.post("/", async (req, res) => {
       "INSERT INTO customers (id, account_number, balance) VALUES ($1, $2, $3)",
       [userId, accountNumber, initialBalance]
     );
+    await logAudit({
+      user_id: null, // or pass the employee's ID if available
+      action: "Create Customer Account",
+      target_type: "User",
+      target_id: userId,
+      metadata: {
+        name,
+        email,
+        phone,
+        address,
+        account_number: accountNumber,
+        initial_balance: initialBalance,
+      },
+    });
 
     // Return generated credentials to employee
     res.status(201).json({

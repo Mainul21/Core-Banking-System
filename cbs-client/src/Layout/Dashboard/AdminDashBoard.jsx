@@ -6,6 +6,8 @@ const AdminDashBoard = () => {
   const [data, setData] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [audit, setAudit] = useState([]);
+  const [showAudit, setShowAudit] = useState(false);
   const [showTransactions, setShowTransactions] = useState(false);
   const [showCustomers, setShowCustomers] = useState(false);
   const [showEmployees, setShowEmployees] = useState(false);
@@ -15,19 +17,22 @@ const AdminDashBoard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [txRes, empRes, custRes] = await Promise.all([
+        const [txRes, empRes, custRes, auditRes] = await Promise.all([
           fetch("http://localhost:5000/api/transaction-history"),
           fetch("http://localhost:5000/api/employees"),
           fetch("http://localhost:5000/api/allAccounts"),
+          fetch("http://localhost:5000/api/audit-logs"),
         ]);
 
         const txData = await txRes.json();
         const empData = await empRes.json();
         const custData = await custRes.json();
+        const auditData = await auditRes.json();
 
         setData(txData);
         setEmployees(empData);
         setCustomers(custData);
+        setAudit(auditData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -119,7 +124,10 @@ const AdminDashBoard = () => {
             </thead>
             <tbody>
               {data.transactions.map((tx) => (
-                <tr key={tx.id} className="border-t hover:bg-gray-50 hover:text-black">
+                <tr
+                  key={tx.id}
+                  className="border-t hover:bg-gray-50 hover:text-black"
+                >
                   <td>{tx.name}</td>
                   <td className="capitalize">{tx.role}</td>
                   <td
@@ -163,7 +171,10 @@ const AdminDashBoard = () => {
             </thead>
             <tbody>
               {employees.map((emp) => (
-                <tr key={emp.id} className="border-t hover:bg-gray-50 hover:text-black">
+                <tr
+                  key={emp.id}
+                  className="border-t hover:bg-gray-50 hover:text-black"
+                >
                   <td>{emp.name}</td>
                   <td>{emp.email}</td>
                   <td>
@@ -202,7 +213,10 @@ const AdminDashBoard = () => {
             </thead>
             <tbody>
               {customers.map((cust) => (
-                <tr key={cust.id} className="border-t hover:bg-gray-50 hover:text-black">
+                <tr
+                  key={cust.id}
+                  className="border-t hover:bg-gray-50 hover:text-black"
+                >
                   <td>{cust.name}</td>
                   <td>{cust.email}</td>
                   <td>{cust.account_number}</td>
@@ -246,7 +260,10 @@ const AdminDashBoard = () => {
             </thead>
             <tbody>
               {transfers.map((ft) => (
-                <tr key={ft.id} className="border-t hover:bg-gray-50 hover:text-black">
+                <tr
+                  key={ft.id}
+                  className="border-t hover:bg-gray-50 hover:text-black"
+                >
                   <td>{ft.id}</td>
                   <td>{ft.sender_account_number}</td>
                   <td>{ft.receiver_account_number}</td>
@@ -269,6 +286,71 @@ const AdminDashBoard = () => {
                       ? new Date(ft.approved_at).toLocaleString()
                       : "Pending"}
                   </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {/* Audit Logs */}
+      {/* Audit Logs */}
+      <div className="flex justify-between items-center mb-4 hover:text-black">
+        <h2 className="text-xl font-bold">Audit Logs</h2>
+        <button
+          onClick={() => setShowAudit((prev) => !prev)}
+          className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg"
+        >
+          {showAudit ? "Hide Logs" : "Show Logs"}
+        </button>
+      </div>
+      {showAudit && (
+        <div className="overflow-x-auto bg-transparent shadow rounded-2xl p-4 mb-8">
+          <table className="min-w-full text-sm text-center">
+            <thead className="bg-emerald-500 text-white">
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Action</th>
+                <th>Info</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {audit.map((log) => (
+                <tr
+                  key={log.id}
+                  className="border-t hover:bg-gray-50 hover:text-black"
+                >
+                  <td>{log.user_name}</td>
+                  <td className="capitalize">{log.user_role}</td>
+                  <td>{log.action}</td>
+                  {/* <td>{log.metadata}</td> */}
+                  <button
+                    className="btn  border-0"
+                    onClick={() =>
+                      document.getElementById("my_modal_1").showModal()
+                    }
+                  >
+                    open modal
+                  </button>
+                  <dialog id="my_modal_1" className="modal">
+                    <div className="modal-box">
+                      <h3 className="font-bold text-lg text-white">Audit Data</h3>
+                      <h2 className="py-4 flex flex-col text-white">
+                        Sender:{log.metadata.sender_account_number} <br />
+                        Receiver:{log.metadata.receiver_account_number} <br />
+                        amount:{log.metadata.amount} <br />
+                        Status:{log.metadata.status}
+                      </h2>
+                      <div className="modal-action">
+                        <form method="dialog">
+                          {/* if there is a button in form, it will close the modal */}
+                          <button className="btn">Close</button>
+                        </form>
+                      </div>
+                    </div>
+                  </dialog>
+                  <td>{new Date(log.timestamp).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

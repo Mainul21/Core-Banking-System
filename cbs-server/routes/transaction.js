@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../db");
+const logAudit = require("../auditLogger"); // Import the audit logger
 
 // POST /api/transaction
 router.post("/", async (req, res) => {
@@ -74,10 +75,18 @@ router.post("/", async (req, res) => {
 
     // Insert transaction record
     const insertResult = await pool.query(
-      "INSERT INTO transactions (user_id, account_number, transaction_type, amount) VALUES ($1, $2, $3, $4)",
+      "INSERT INTO transactions (user_id, account_number, transaction_type, amount) VALUES ($1, $2, $3, $4) RETURNING id",
       [id, trimmedAccNumber, type, numericAmount]
     );
+    
     console.log("Transaction inserted:", insertResult.rowCount > 0);
+    await logAudit({
+      user_id: parseInt(id),
+      action: type === "deposit" ? "Deposit" : "Withdrawal",
+      target_type: "Transaction",
+      target_id: parseInt(insertResult.rows[0].id),
+      metadata: { account_number: trimmedAccNumber, amount: numericAmount },
+    });
 
     return res.status(200).json({ success: true, message: "Transaction completed successfully", newBalance: updatedBalance });
 

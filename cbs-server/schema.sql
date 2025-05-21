@@ -71,3 +71,25 @@ CREATE TABLE fund_transfers (
 
 ALTER TABLE fund_transfers
 ADD COLUMN sender_account_number VARCHAR(20) REFERENCES customers(account_number) ON DELETE CASCADE;
+
+
+-- audit_logs table to track changes in transactions and fund transfers
+CREATE TABLE audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  action TEXT NOT NULL,
+  target_type TEXT NOT NULL,      -- e.g., 'loan', 'transaction', 'account'
+  target_id UUID,                 -- optional if you want to link the affected row
+  metadata JSONB DEFAULT '{}'::jsonb,  -- to store dynamic details like amount, status
+  timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+-- Drop UUID columns
+ALTER TABLE audit_logs DROP COLUMN id;
+ALTER TABLE audit_logs DROP COLUMN target_id;
+
+-- Add INTEGER columns instead
+ALTER TABLE audit_logs ADD COLUMN id SERIAL PRIMARY KEY;
+ALTER TABLE audit_logs ADD COLUMN target_id INTEGER;
+
+-- (Assumes user_id is already changed to INTEGER as you did earlier)
+

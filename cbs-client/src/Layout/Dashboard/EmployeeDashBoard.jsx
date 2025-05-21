@@ -107,9 +107,11 @@ const EmployeeDashBoard = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start px-4 py-6 bg-[url('./emp-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300 overflow-auto">
-      <h1 className="text-center mb-6 text-3xl font-bold bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">
+      <div className="bg-gray-500/30 rounded-xl p-4 mb-6">
+      <h1 className="text-center text-3xl font-bold bg-gradient-to-r from-emerald-700 to-black bg-clip-text text-transparent">
         Welcome {name}
       </h1>
+      </div>
 
       <button
         className="btn mb-4 bg-emerald-500 rounded-xl transition-all duration-300 hover:bg-red-500 text-black"
@@ -228,9 +230,12 @@ const EmployeeDashBoard = () => {
             <h1 className="text-center">Open Account</h1>
           </div>
         </Link>
+        <Link to="/transactions">
         <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
           <h1 className="text-center">Make Transaction</h1>
         </div>
+        </Link>
+
         <Link to="/fund-transfer">
           <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold bg-black/30 hover:text-black">
             <h1 className="text-center">Transfer Fund</h1>
