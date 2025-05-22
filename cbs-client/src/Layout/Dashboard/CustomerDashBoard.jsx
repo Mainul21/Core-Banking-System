@@ -4,19 +4,21 @@ import { AuthContext } from "../Context/AuthContext";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import Modal from "react-modal";
 import { Link, useNavigate } from "react-router";
+import { jsPDF } from "jspdf";
+import { autoTable } from "jspdf-autotable";
 
 const CustomerDashBoard = () => {
-  const { user, logout,info } = useContext(AuthContext);
+  const { user, logout, info } = useContext(AuthContext);
   const { id, name, balance, account_number, email } = user;
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [showTransactions, setShowTransactions] = useState(false);
-  const [filterType, setFilterType] = useState(""); // For transaction type filter
-  const [fromDate, setFromDate] = useState(""); // For start date filter
-  const [toDate, setToDate] = useState(""); // For end date filter
+  const [filterType, setFilterType] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const navigate = useNavigate();
-  console.log(info)
+
   useEffect(() => {
     const message = localStorage.getItem("showLoginToast");
     if (message === "true") {
@@ -25,7 +27,6 @@ const CustomerDashBoard = () => {
     }
   }, []);
 
-  // Fetch transactions when toggled or filters are updated
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -45,7 +46,6 @@ const CustomerDashBoard = () => {
           toast.error("Failed to load transactions");
         }
       } catch (err) {
-        console.error(err);
         toast.error("Server error");
       }
     };
@@ -53,8 +53,39 @@ const CustomerDashBoard = () => {
     if (showTransactions) fetchTransactions();
   }, [showTransactions, id, filterType, fromDate, toDate]);
 
-  const toggleBalance = () => {
-    setShowBalance(!showBalance);
+  const toggleBalance = () => setShowBalance(!showBalance);
+
+  const downloadStatement = () => {
+    if (transactions.length === 0) {
+      toast.error("No transactions available to download", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(`Account Statement for ${user.name}`, 14, 20);
+    doc.setFontSize(12);
+    doc.text(`Account Number: ${user.account_number}`, 14, 30);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 40);
+
+    const tableColumn = ["Date", "Type", "Amount"];
+    const tableRows = transactions.map((transaction) => [
+      new Date(transaction.created_at).toLocaleDateString(),
+      transaction.transaction_type,
+      transaction.amount,
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 50,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 101, 52] },
+    });
+
+    doc.save(`statement-${user.account_number}.pdf`);
   };
 
   const handlePasswordChange = async (e) => {
@@ -80,110 +111,152 @@ const CustomerDashBoard = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(data.message || "Password changed successfully!", { position: "top-center" });
+        toast.success(data.message || "Password changed successfully!", {
+          position: "top-center",
+        });
         setModalIsOpen(false);
       } else {
-        toast.error(data.error || "Error changing password", { position: "top-center" });
+        toast.error(data.error || "Error changing password", {
+          position: "top-center",
+        });
       }
     } catch (error) {
-      console.error("Error:", error);
       toast.error("Server error", { position: "top-center" });
     }
   };
-  if (!user) return <div className="text-white text-center mt-10">Loading...</div>;
-  return (
-    <div className="h-fit min-h-screen flex flex-col items-center justify-center px-4 py-10 bg-[url('./cd-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300">
-      <h1 className="text-center mb-6 text-3xl font-bold">Welcome, {name}</h1>
 
-      <div className="shadow-xl bg-black/30 w-full max-w-xl mb-6 p-6 rounded-lg flex flex-col items-center justify-center">
-        <h1 className="text-center mb-6 text-xl font-bold">Email: {email}</h1>
-        <h1 className="text-center mb-6 text-xl font-bold">Account Number: {account_number}</h1>
-        <div className="flex justify-center items-center gap-2">
-          <h1 className="text-center mb-6 text-xl font-bold">
-            Balance: {showBalance ? (info? info:balance ) : "****"}
-            {/* Balance: {showBalance ? balance  : "****"} */}
-          </h1>
+  if (!user)
+    return <div className="text-white text-center mt-10">Loading...</div>;
+
+  return (
+    <div className="min-h-screen bg-[url('./cd-bg.jpg')] bg-center bg-cover bg-no-repeat px-6 py-10 flex flex-col items-center text-emerald-100">
+      <h1 className="text-4xl font-extrabold mb-8 drop-shadow-lg text-center">
+        Welcome, {name}
+      </h1>
+
+      <section className="bg-transparent rounded-xl shadow-2xl max-w-xl w-full p-8 mb-8 space-y-6 text-center">
+        <p className="text-lg font-semibold break-words">
+          <span className="font-bold">Email:</span> {email}
+        </p>
+        <p className="text-lg font-semibold break-words">
+          <span className="font-bold">Account Number:</span> {account_number}
+        </p>
+        <div className="flex justify-center items-center gap-3 text-xl font-semibold">
+          <span>
+            Balance:{" "}
+            {showBalance ? (info ? info : balance) : "****"}
+          </span>
           <button
-            className="btn bg-emerald-500 rounded-xl text-black"
             onClick={toggleBalance}
+            aria-label="Toggle balance visibility"
+            className="text-emerald-400 hover:text-emerald-200 transition"
           >
-            {showBalance ? <FaRegEyeSlash /> : <FaRegEye />}
+            {showBalance ? <FaRegEyeSlash size={24} /> : <FaRegEye size={24} />}
           </button>
         </div>
-        <button
-          className="btn bg-emerald-500 rounded-xl transition-all duration-300 hover:bg-red-500 text-black"
-          onClick={logout}
-        >
-          Logout
-        </button>
-        <button
-          className="btn bg-emerald-500 rounded-xl transition-all duration-300 hover:bg-blue-500 text-black mt-3"
-          onClick={() => setModalIsOpen(true)}
-        >
-          Change Password
-        </button>
-      </div>
 
-      {/* Filter for transactions */}
-      <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-4">
+        <div className="flex flex-wrap justify-center gap-4 mt-6">
+          <button
+            onClick={logout}
+            className="btn bg-red-600 hover:bg-red-700 text-white rounded-full px-6 py-2 font-semibold shadow-md transition"
+          >
+            Logout
+          </button>
+          <button
+            onClick={() => setModalIsOpen(true)}
+            className="btn bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 font-semibold shadow-md transition"
+          >
+            Change Password
+          </button>
+          <button
+            onClick={() => document.getElementById("my_modal_3").showModal()}
+            className="btn bg-gray-700 hover:bg-gray-600 text-white rounded-full px-6 py-2 font-semibold shadow-md transition"
+          >
+            Contact Us
+          </button>
+          <button
+            onClick={downloadStatement}
+            className="btn bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6 py-2 font-semibold shadow-md transition"
+          >
+            Download Statement
+          </button>
+        </div>
+
+        <dialog
+          id="my_modal_3"
+          className="modal bg-black bg-opacity-80 rounded-lg max-w-md p-6 text-white"
+        >
+          <form method="dialog" className="relative">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-white">
+              ✕
+            </button>
+            <h3 className="text-2xl font-bold mb-4">Contact Us</h3>
+            <p className="mb-2">Email: mainul.hossain.chisty@g.bracu.ac.bd</p>
+            <p>Phone: 01634070584</p>
+          </form>
+        </dialog>
+      </section>
+
+      {/* Filters */}
+      <section className="max-w-4xl w-full bg-black bg-opacity-25 rounded-xl p-6 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between text-white">
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="input"
+          className="input bg-emerald-900 border-emerald-600 text-white rounded-lg px-3 py-2"
         >
           <option value="">All Types</option>
           <option value="deposit">Deposit</option>
           <option value="withdraw">Withdraw</option>
         </select>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <input
             type="date"
-            className="input"
             value={fromDate}
             onChange={(e) => setFromDate(e.target.value)}
+            className="input bg-emerald-900 border-emerald-600 text-white rounded-lg px-3 py-2"
           />
-          <span className="text-white bg-black/50 text-xl p-2">to</span>
+          <span className="text-white text-lg font-semibold select-none">to</span>
           <input
             type="date"
-            className="input"
             value={toDate}
             onChange={(e) => setToDate(e.target.value)}
+            className="input bg-emerald-900 border-emerald-600 text-white rounded-lg px-3 py-2"
           />
         </div>
 
         <button
           onClick={() => setShowTransactions(true)}
-          className="btn bg-emerald-500 text-black"
+          className="btn bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-6 py-2 font-semibold shadow-md"
         >
           Filter
         </button>
-      </div>
+      </section>
 
-      {/* Collapsible Transaction Table */}
-      <div className="w-full max-w-4xl px-4">
+      {/* Transactions Table */}
+      <section className="max-w-4xl w-full px-2 md:px-6">
         <button
           onClick={() => setShowTransactions(!showTransactions)}
-          className="w-full bg-emerald-600 text-white rounded-lg px-4 py-2 mb-4 hover:bg-emerald-700 transition"
+          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-4 py-3 mb-4 font-semibold transition"
         >
           {showTransactions ? "Hide Transactions" : "View Transactions"}
         </button>
 
         {showTransactions && (
-          <div className="overflow-x-auto bg-white/30 backdrop-blur p-4 rounded-lg text-black max-h-[400px] overflow-y-auto">
+          <div className="overflow-x-auto bg-white bg-opacity-80 rounded-lg shadow-lg max-h-[400px] overflow-y-auto">
             <table className="min-w-full table-auto text-left border-collapse">
-              <thead>
-                <tr className="bg-emerald-500 text-white text-center">
-                  <th className="px-4 py-2">ID</th>
-                  <th className="px-4 py-2">Type</th>
-                  <th className="px-4 py-2">Amount</th>
-                  <th className="px-4 py-2">Created At</th>
+              <thead className="bg-emerald-600 text-white sticky top-0">
+                <tr>
+                  <th className="px-5 py-3">ID</th>
+                  <th className="px-5 py-3">Type</th>
+                  <th className="px-5 py-3">Amount</th>
+                  <th className="px-5 py-3">Created At</th>
                 </tr>
               </thead>
               <tbody>
                 {transactions.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="text-center py-4">
+                    <td colSpan="4" className="text-center py-6 text-emerald-900 font-semibold">
                       No transactions found.
                     </td>
                   </tr>
@@ -191,12 +264,14 @@ const CustomerDashBoard = () => {
                   transactions.map((txn, index) => (
                     <tr
                       key={index}
-                      className="hover:bg-emerald-100 transition border-b text-center"
+                      className="border-b hover:bg-emerald-500 transition text-center text-black"
                     >
-                      <td className="px-4 py-2">{txn.id}</td>
-                      <td className="px-4 py-2 capitalize">{txn.transaction_type}</td>
-                      <td className="px-4 py-2">${txn.amount}</td>
-                      <td className="px-4 py-2">{new Date(txn.created_at).toLocaleString()}</td>
+                      <td className="px-5 py-3">{txn.id}</td>
+                      <td className="px-5 py-3 capitalize">{txn.transaction_type}</td>
+                      <td className="px-5 py-3">${txn.amount}</td>
+                      <td className="px-5 py-3">
+                        {new Date(txn.created_at).toLocaleString()}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -204,60 +279,50 @@ const CustomerDashBoard = () => {
             </table>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Navigation Buttons */}
-      <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">
-        <div className="border-4 bg-black/30 border-emerald-700 text-emerald-300 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
-          <button onClick={() => navigate("/transactions")} className="text-center">Make Transaction</button>
-        </div>
-        <Link to='/fund-transfer'>
-        <div className="border-4 bg-white/30 border-emerald-700 text-emerald-900 rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl font-bold hover:text-black">
-          <h1 className="text-center">Transfer Fund</h1>
-        </div>
-        </Link>
-      </div>
-
-      {/* Modal for changing password */}
+      {/* Password Change Modal */}
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={() => setModalIsOpen(false)}
-        className="bg-white p-6 rounded-lg shadow-lg max-w-sm mx-auto text-black"
-        overlayClassName="fixed inset-0 bg-[url('./cd-bg.jpg')] bg-opacity-50 flex justify-center items-center"
+        className="max-w-md mx-auto mt-20 bg-white rounded-lg p-8 shadow-lg outline-none"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-start z-50"
+        ariaHideApp={false}
       >
-        <h2 className="text-xl font-bold mb-4">Change Password</h2>
-        <form className="flex flex-col gap-4" onSubmit={handlePasswordChange}>
-          <label className="text-lg font-bold">Old Password:</label>
+        <h2 className="text-2xl font-bold mb-6 text-emerald-900">Change Password</h2>
+        <form onSubmit={handlePasswordChange} className="space-y-4">
           <input
-            type="password"
-            className="input w-full mb-4"
-            name="oldPassword"
-            placeholder="Enter Old Password"
-            required
-          />
-          <label className="text-lg font-bold">New Password</label>
-          <input
-            type="password"
-            className="input w-full mb-4"
             name="newPassword"
-            placeholder="Enter New Password"
-            required
-          />
-          <label className="text-lg font-bold">Confirm Password</label>
-          <input
             type="password"
-            className="input w-full mb-4"
+            placeholder="New Password"
+            required
+            minLength={6}
+            className="w-full px-4 py-2 border border-emerald-700 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-600"
+          />
+          <input
             name="confirmPassword"
+            type="password"
             placeholder="Confirm New Password"
             required
+            minLength={6}
+            className="w-full px-4 py-2 border border-emerald-700 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-600"
           />
-          <button className="btn btn-neutral w-full mt-4" type="submit">
-            Change Password
-          </button>
+          <div className="flex justify-between items-center mt-6">
+            <button
+              type="submit"
+              className="btn bg-emerald-600 hover:bg-emerald-700 text-white rounded-md px-6 py-2 font-semibold"
+            >
+              Change
+            </button>
+            <button
+              type="button"
+              onClick={() => setModalIsOpen(false)}
+              className="btn bg-gray-400 hover:bg-gray-500 text-gray-900 rounded-md px-6 py-2 font-semibold"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
-        <button className="btn btn-danger mt-4" onClick={() => setModalIsOpen(false)}>
-          Close
-        </button>
       </Modal>
 
       <ToastContainer />

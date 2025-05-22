@@ -106,40 +106,42 @@ const EmployeeDashBoard = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-4 py-6 bg-[url('./emp-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300 overflow-auto">
-      <div className="bg-gray-500/30 rounded-xl p-4 mb-6">
-      <h1 className="text-center text-3xl font-bold bg-gradient-to-r from-emerald-700 to-black bg-clip-text text-transparent">
-        Welcome {name}
-      </h1>
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-start px-6 py-8 bg-[url('./emp-bg.jpg')] bg-center bg-cover bg-no-repeat text-emerald-100 overflow-auto">
+      {/* Header */}
+      <header className="w-full max-w-6xl bg-black/30 bg-opacity-40 rounded-xl shadow-lg p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <h1 className="text-4xl font-extrabold tracking-wide bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent select-none">
+          Welcome, {name}
+        </h1>
+        <button
+          className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 transition-colors font-semibold text-white shadow-md"
+          onClick={logout}
+        >
+          Logout
+        </button>
+      </header>
 
+      {/* Toggle Customer List */}
       <button
-        className="btn mb-4 bg-emerald-500 rounded-xl transition-all duration-300 hover:bg-red-500 text-black"
-        onClick={logout}
-      >
-        Logout
-      </button>
-
-      <button
-        className="mb-4 px-4 py-2 bg-black/30 hover:bg-emerald-500 text-white rounded transition-all duration-300"
+        className="mb-6 px-6 py-3 rounded-full bg-black bg-opacity-30 hover:bg-emerald-500 hover:text-black transition-all font-semibold shadow-md"
         onClick={() => setShowTable(!showTable)}
       >
         {showTable ? "Hide Customer List" : "Show Customer List"}
       </button>
 
+      {/* Customer List */}
       {showTable && (
         loading ? (
-          <p className="text-lg mt-3 bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">
+          <p className="text-xl font-medium bg-gradient-to-r from-green-300 to-emerald-200 bg-clip-text text-transparent select-none">
             Loading customer details...
           </p>
         ) : (
-          <div className="w-full max-w-4xl transition-all duration-300">
-            <table className="w-full border border-gray-700 mb-6">
+          <div className="w-full max-w-6xl overflow-x-auto rounded-lg shadow-lg border border-emerald-700 bg-black bg-opacity-30">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-900 text-white">
-                  <th className="p-3 border">Name</th>
-                  <th className="p-3 border">Account Number</th>
-                  <th className="p-3 border">Actions</th>
+                <tr className="bg-emerald-900 text-emerald-200 uppercase text-sm tracking-wider">
+                  <th className="p-4 border-b border-emerald-700">Name</th>
+                  <th className="p-4 border-b border-emerald-700">Account Number</th>
+                  <th className="p-4 border-b border-emerald-700 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -148,13 +150,15 @@ const EmployeeDashBoard = () => {
                     <React.Fragment key={customer.id}>
                       <tr
                         onClick={() => toggleRow(index)}
-                        className="cursor-pointer text-center bg-gray-800 hover:bg-gray-700 transition-all border border-gray-600"
+                        className={`cursor-pointer border-b border-emerald-700 hover:bg-emerald-800 transition-colors ${
+                          openRow === index ? "bg-emerald-900" : "bg-emerald-800"
+                        }`}
                       >
-                        <td className="p-3 border">{customer.name}</td>
-                        <td className="p-3 border">{customer.account_number}</td>
-                        <td className="p-3 border">
+                        <td className="p-4">{customer.name}</td>
+                        <td className="p-4">{customer.account_number}</td>
+                        <td className="p-4 text-center">
                           <button
-                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700"
+                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-md transition-shadow shadow-md"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDelete(customer.id);
@@ -165,10 +169,14 @@ const EmployeeDashBoard = () => {
                         </td>
                       </tr>
                       {openRow === index && (
-                        <tr className="bg-gray-900 text-white border border-gray-600">
-                          <td colSpan="3" className="p-4 text-left">
-                            <p><strong>Email:</strong> {customer.email}</p>
-                            <p><strong>Balance:</strong> ${customer.balance}</p>
+                        <tr className="bg-emerald-700 text-emerald-200">
+                          <td colSpan="3" className="p-6 text-sm leading-relaxed">
+                            <p>
+                              <strong>Email:</strong> {customer.email}
+                            </p>
+                            <p>
+                              <strong>Balance:</strong> ${customer.balance.toFixed(2)}
+                            </p>
                           </td>
                         </tr>
                       )}
@@ -176,7 +184,7 @@ const EmployeeDashBoard = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" className="p-3 text-center">
+                    <td colSpan="3" className="p-6 text-center text-emerald-300 font-medium">
                       No customers found
                     </td>
                   </tr>
@@ -187,61 +195,65 @@ const EmployeeDashBoard = () => {
         )
       )}
 
-      {/* 🚀 Pending Transfers Table */}
-      <div className="w-full max-w-4xl bg-black/30 mt-6 p-4 rounded-xl">
-        <h2 className="text-xl font-bold text-white mb-4">Pending Fund Transfers</h2>
+      {/* Pending Transfers */}
+      <section className="w-full max-w-6xl mt-10 bg-black/30 bg-opacity-30 rounded-xl p-6 shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 text-emerald-300 tracking-wide">Pending Fund Transfers</h2>
         {pendingTransfers.length === 0 ? (
-          <p className="text-white">No pending transfers.</p>
+          <p className="text-emerald-400 italic">No pending transfers.</p>
         ) : (
-          <table className="w-full border border-gray-700">
-            <thead>
-              <tr className="bg-gray-900 text-white">
-                <th className="p-3 border">Sender</th>
-                <th className="p-3 border">Receiver</th>
-                <th className="p-3 border">Amount</th>
-                <th className="p-3 border">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingTransfers.map((t) => (
-                <tr key={t.id} className="bg-gray-800 text-white border border-gray-700 text-center">
-                  <td className="p-3 border">{t.sender_account_number}</td>
-                  <td className="p-3 border">{t.receiver_account_number}</td>
-                  <td className="p-3 border">${t.amount}</td>
-                  <td className="p-3 border">
-                    <button
-                      className="bg-emerald-500 hover:bg-green-700 text-black font-bold py-1 px-3 rounded"
-                      onClick={() => handleApproveTransfer(t.id)}
-                    >
-                      Approve
-                    </button>
-                  </td>
+          <div className="overflow-x-auto rounded-lg border border-emerald-700">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-emerald-900 text-emerald-200 uppercase text-sm tracking-wider">
+                <tr>
+                  <th className="p-4 border-b border-emerald-700">Sender</th>
+                  <th className="p-4 border-b border-emerald-700">Receiver</th>
+                  <th className="p-4 border-b border-emerald-700">Amount</th>
+                  <th className="p-4 border-b border-emerald-700 text-center">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {pendingTransfers.map((t) => (
+                  <tr
+                    key={t.id}
+                    className="bg-emerald-800 text-emerald-100 border-b border-emerald-700 text-center hover:bg-emerald-700 transition-colors"
+                  >
+                    <td className="p-4">{t.sender_account_number}</td>
+                    <td className="p-4">{t.receiver_account_number}</td>
+                    <td className="p-4">${t.amount.toFixed(2)}</td>
+                    <td className="p-4">
+                      <button
+                        className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold px-5 py-2 rounded-md shadow-md transition"
+                        onClick={() => handleApproveTransfer(t.id)}
+                      >
+                        Approve
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </div>
+      </section>
 
       {/* Feature Cards */}
-      <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">
-        <Link to="/OpenAccount">
-          <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 bg-black/30 hover:text-2xl hover:font-bold hover:text-black">
-            <h1 className="text-center">Open Account</h1>
-          </div>
+      <nav className="flex flex-col md:flex-row items-center justify-center gap-8 mt-12 w-full max-w-6xl">
+        <Link to="/OpenAccount" className="w-44 h-44 rounded-3xl bg-emerald-500 bg-opacity-30 flex items-center justify-center shadow-lg hover:shadow-emerald-400 transition-shadow duration-300 hover:scale-105">
+          <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
+            Open Account
+          </span>
         </Link>
-        <Link to="/transactions">
-        <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
-          <h1 className="text-center">Make Transaction</h1>
-        </div>
+        <Link to="/transactions" className="w-44 h-44 rounded-3xl bg-emerald-500 bg-opacity-30 flex items-center justify-center shadow-lg hover:shadow-emerald-400 transition-shadow duration-300 hover:scale-105">
+          <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
+            Make Transaction
+          </span>
         </Link>
-
-        <Link to="/fund-transfer">
-          <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold bg-black/30 hover:text-black">
-            <h1 className="text-center">Transfer Fund</h1>
-          </div>
+        <Link to="/fund-transfer" className="w-44 h-44 rounded-3xl bg-emerald-500 bg-opacity-30 flex items-center justify-center shadow-lg hover:shadow-emerald-400 transition-shadow duration-300 hover:scale-105">
+          <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
+            Transfer Fund
+          </span>
         </Link>
-      </div>
+      </nav>
 
       <ToastContainer />
     </div>
