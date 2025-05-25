@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../Context/AuthContext";
+import { Link } from "react-router";
 
 const AdminDashBoard = () => {
   const { logout } = useContext(AuthContext);
@@ -41,6 +42,34 @@ const AdminDashBoard = () => {
     fetchData();
   }, []);
 
+  const handleDelete = async (id) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this employee?");
+  if (!confirmDelete) return;
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/employees/${id}`, {
+      method: "DELETE",
+    });
+
+    if (response.ok) {
+      setEmployees(employees.filter((emp) => emp.id !== id));
+      alert("Employee deleted successfully.");
+    } else {
+      // Try to parse JSON only if there's content
+      let errorMessage = "Unknown error";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || JSON.stringify(errorData);
+      } catch {
+        errorMessage = "No detailed error message returned";
+      }
+      alert("Failed to delete employee: " + errorMessage);
+    }
+  } catch (error) {
+    alert("Error deleting employee: " + error.message);
+  }
+};
+
   useEffect(() => {
     const fetchFundTransfers = async () => {
       try {
@@ -65,11 +94,17 @@ const AdminDashBoard = () => {
 
       <div className="flex justify-center mb-6">
         <button
-          className="btn bg-emerald-500 hover:bg-red-500 p-4"
+          className="btn bg-red-500 hover:bg-red-500 p-4"
           onClick={logout}
         >
           Logout
         </button>
+      </div>
+      <div className="flex justify-center mb-6">
+        <Link
+          to="/create-employee"><button className="btn bg-emerald-500 hover:bg-blue-500 p-4">
+          Create Employee
+        </button></Link>
       </div>
 
       {/* Stats Section */}
@@ -178,7 +213,7 @@ const AdminDashBoard = () => {
                   <td>{emp.name}</td>
                   <td>{emp.email}</td>
                   <td>
-                    <button className="text-red-600 hover:underline">
+                    <button className="text-red-600 hover:underline" onClick={() => handleDelete(emp.id)}>
                       Delete
                     </button>
                   </td>

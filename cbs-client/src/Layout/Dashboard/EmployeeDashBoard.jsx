@@ -253,6 +253,11 @@ const EmployeeDashBoard = () => {
             Transfer Fund
           </span>
         </Link>
+        <Link to="" className="w-44 h-44 rounded-3xl bg-emerald-500 bg-opacity-30 flex items-center justify-center shadow-lg hover:shadow-emerald-400 transition-shadow duration-300 hover:scale-105">
+          <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
+            Loan Request
+          </span>
+        </Link>
       </nav>
 
       <ToastContainer />

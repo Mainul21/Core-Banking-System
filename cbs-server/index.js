@@ -8,7 +8,9 @@ const accountRoutes = require("./routes/openAccount");
 const customerRoutes = require("./routes/deleteCustomerAccount");
 const transactionRoutes = require("./routes/transaction");
 const customerTransaction = require("./routes/customerTransaction");
-const fundTransferRoutes = require("./routes/fundTransfer"); // fund transfer route
+const fundTransferRoutes = require("./routes/fundTransfer");
+const createEmployeeRoutes = require("./routes/createEmployee"); 
+
 const app = express();
 const port = 5000 || process.env.PORT;
 
@@ -25,6 +27,7 @@ app.use("/api/customer", customerRoutes); //Delete customer account route
 app.use("/api/transaction", transactionRoutes); // Transaction route
 app.use("/api/customer-transaction", customerTransaction); // customer transaction route
 app.use("/api/fund-transfer", fundTransferRoutes); // fund transfer route
+app.use("/api/create-employee", createEmployeeRoutes); // Create employee route
 
 
 // Audit Logs
@@ -112,6 +115,47 @@ app.get("/api/allAccounts", async (req, res) => {
     res.status(500).send("Database query failed");
   }
 });
+
+// delete employee account
+app.delete("/api/employees/:id", async (req, res) => {
+  const employeeId = req.params.id;
+  console.log("Deleting employee with ID:", employeeId);
+  try {
+    // 1. Find user_id linked to employee ID
+    const employeeResult = await pool.query(
+      "SELECT id FROM employees WHERE id = $1",
+      [employeeId]
+    );
+    console.log("employee found" , employeeResult.rows);
+
+    if (employeeResult.rowCount === 0) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    const userId = employeeResult.rows[0].id;
+    console.log("userId found:", userId);
+
+    // 2. Delete user with the retrieved userId if role is 'employee'
+    const deleteResult = await pool.query(
+      "DELETE FROM users WHERE id = $1 AND role = 'employee'",
+      [userId]
+    );
+
+    if (deleteResult.rowCount === 0) {
+      return res.status(404).json({ message: "User not found or already deleted" });
+    }
+
+    // 3. Optionally, delete employee record if you want to cascade delete
+    await pool.query("DELETE FROM employees WHERE id = $1", [employeeId]);
+
+    res.status(200).json({ message: "Employee deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting employee:", err.message);
+    res.status(500).json({ message: "Server error deleting employee" });
+  }
+});
+
+
 
 //Get transaction history for admin dashboard
 app.get("/api/transaction-history", async (req, res) => {

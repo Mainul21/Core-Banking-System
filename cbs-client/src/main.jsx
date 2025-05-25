@@ -11,6 +11,7 @@ import { AuthProvider } from "./Layout/Context/AuthContext";
 import ProtectedRoute from "./Layout/Authentication/Protected";
 import Transaction from "./Layout/Components/Transaction";
 import FundTransfer from "./Layout/Components/FundTransfer";
+import CreateEmployee from "./Layout/Components/CreateEmployee";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -21,6 +22,7 @@ createRoot(document.getElementById("root")).render(
         {/* PROTECTED ROUTES */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route path="/admin-dashboard" element={<AdminDashBoard />} />
+          <Route path="/create-employee" element={<CreateEmployee />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["employee"]} />}>
