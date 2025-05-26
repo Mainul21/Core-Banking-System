@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../Context/AuthContext";
 import { Link } from "react-router";
+import { toast, ToastContainer } from "react-toastify";
 
 const AdminDashBoard = () => {
   const { logout } = useContext(AuthContext);
@@ -53,7 +54,7 @@ const AdminDashBoard = () => {
 
     if (response.ok) {
       setEmployees(employees.filter((emp) => emp.id !== id));
-      alert("Employee deleted successfully.");
+      toast.success("Employee deleted successfully.");
     } else {
       // Try to parse JSON only if there's content
       let errorMessage = "Unknown error";
@@ -63,10 +64,10 @@ const AdminDashBoard = () => {
       } catch {
         errorMessage = "No detailed error message returned";
       }
-      alert("Failed to delete employee: " + errorMessage);
+      toast.error("Failed to delete employee: " + errorMessage);
     }
   } catch (error) {
-    alert("Error deleting employee: " + error.message);
+    toast.error("Error deleting employee: " + error.message);
   }
 };
 
@@ -390,7 +391,9 @@ const AdminDashBoard = () => {
               ))}
             </tbody>
           </table>
+          <ToastContainer/>
         </div>
+        
       )}
     </div>
   );

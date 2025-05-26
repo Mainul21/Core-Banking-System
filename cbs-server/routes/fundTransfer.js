@@ -187,11 +187,19 @@ router.put('/approve/:id', authenticateToken, async (req, res) => {
       [transfer.amount, transfer.receiver_account_number]
     );
 
+    const empIDQuery = await pool.query(
+      'SELECT employee_id FROM employees WHERE id = $1',
+      [user.id]
+    );
+    console.log('Employee ID query result:', empIDQuery.rows);
+
+    const employeeId = empIDQuery.rows[0].employee_id;
+
     await pool.query(
       `UPDATE fund_transfers 
        SET status = 'approved', approved_by = $1, approved_at = CURRENT_TIMESTAMP 
        WHERE id = $2`,
-      [user.id, transferId]
+      [employeeId, transferId]
     );
 
     await logAudit({

@@ -65,7 +65,7 @@ CREATE TABLE fund_transfers (
     amount DECIMAL(15, 2) NOT NULL CHECK (amount > 0),
     status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
     requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    approved_by INT REFERENCES employees(id) ON DELETE SET NULL,
+    approved_by VARCHAR(20),
     approved_at TIMESTAMP
 );
 
@@ -93,3 +93,37 @@ ALTER TABLE audit_logs ADD COLUMN target_id INTEGER;
 
 -- (Assumes user_id is already changed to INTEGER as you did earlier)
 
+CREATE TABLE loans (
+    id SERIAL PRIMARY KEY,
+    
+    customer_id INT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+    requested_by INT NOT NULL REFERENCES employees(id) ON DELETE SET NULL,
+    approved_by INT REFERENCES admins(id) ON DELETE SET NULL,
+    
+    amount DECIMAL(15, 2) NOT NULL CHECK (amount > 0),
+    term_months INT NOT NULL CHECK (term_months > 0),  -- e.g., 6 months
+    interest_rate DECIMAL(5, 2) NOT NULL CHECK (interest_rate >= 0), -- e.g., 5.5%
+    
+    monthly_due DECIMAL(15, 2),  -- calculated after approval
+    penalty_rate DECIMAL(5, 2) DEFAULT 0.00 CHECK (penalty_rate >= 0),  -- e.g., 2% per late month
+    
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
+    
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approved_at TIMESTAMP,
+    completed_at TIMESTAMP
+);
+
+CREATE TABLE loan_payments (
+    id SERIAL PRIMARY KEY,
+    
+    loan_id INT NOT NULL REFERENCES loans(id) ON DELETE CASCADE,
+    due_date DATE NOT NULL,
+    paid_at TIMESTAMP,
+    
+    amount_due DECIMAL(15, 2) NOT NULL,
+    amount_paid DECIMAL(15, 2),
+    penalty DECIMAL(15, 2) DEFAULT 0.00,
+    
+    status VARCHAR(20) DEFAULT 'due' CHECK (status IN ('due', 'paid', 'late'))
+);

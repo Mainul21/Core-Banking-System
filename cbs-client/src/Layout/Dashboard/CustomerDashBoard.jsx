@@ -3,7 +3,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { AuthContext } from "../Context/AuthContext";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import Modal from "react-modal";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
 
@@ -17,7 +17,7 @@ const CustomerDashBoard = () => {
   const [filterType, setFilterType] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     const message = localStorage.getItem("showLoginToast");
@@ -46,7 +46,9 @@ const CustomerDashBoard = () => {
           toast.error("Failed to load transactions");
         }
       } catch (err) {
-        toast.error("Server error");
+        toast.error("Server error"+err.message, {
+          position: "top-right",
+        });
       }
     };
 
@@ -121,7 +123,7 @@ const CustomerDashBoard = () => {
         });
       }
     } catch (error) {
-      toast.error("Server error", { position: "top-center" });
+      toast.error("Server error"+error.message, { position: "top-center" });
     }
   };
 
@@ -326,6 +328,20 @@ const CustomerDashBoard = () => {
       </Modal>
 
       <ToastContainer />
+      {/* Feature Cards */}
+      <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">
+        <Link to="/transactions">
+        <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
+          <h1 className="text-center">Make Transaction</h1>
+        </div>
+        </Link>
+
+        <Link to="/fund-transfer">
+          <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl hover:font-bold bg-black/30 hover:text-black">
+            <h1 className="text-center">Transfer Fund</h1>
+          </div>
+        </Link>
+      </div>
     </div>
   );
 };

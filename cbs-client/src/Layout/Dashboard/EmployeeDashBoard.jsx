@@ -219,7 +219,7 @@ const EmployeeDashBoard = () => {
                   >
                     <td className="p-4">{t.sender_account_number}</td>
                     <td className="p-4">{t.receiver_account_number}</td>
-                    <td className="p-4">${t.amount.toFixed(2)}</td>
+                    <td className="p-4">${t.amount}</td>
                     <td className="p-4">
                       <button
                         className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold px-5 py-2 rounded-md shadow-md transition"
@@ -238,22 +238,22 @@ const EmployeeDashBoard = () => {
 
       {/* Feature Cards */}
       <nav className="flex flex-col md:flex-row items-center justify-center gap-8 mt-12 w-full max-w-6xl">
-        <Link to="/OpenAccount" className="w-44 h-44 rounded-3xl bg-emerald-500 bg-opacity-30 flex items-center justify-center shadow-lg hover:shadow-emerald-400 transition-shadow duration-300 hover:scale-105">
+        <Link to="/OpenAccount" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
           <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
             Open Account
           </span>
         </Link>
-        <Link to="/transactions" className="w-44 h-44 rounded-3xl bg-emerald-500 bg-opacity-30 flex items-center justify-center shadow-lg hover:shadow-emerald-400 transition-shadow duration-300 hover:scale-105">
+        <Link to="/transactions" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
           <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
             Make Transaction
           </span>
         </Link>
-        <Link to="/fund-transfer" className="w-44 h-44 rounded-3xl bg-emerald-500 bg-opacity-30 flex items-center justify-center shadow-lg hover:shadow-emerald-400 transition-shadow duration-300 hover:scale-105">
+        <Link to="/fund-transfer" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
           <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
             Transfer Fund
           </span>
         </Link>
-        <Link to="" className="w-44 h-44 rounded-3xl bg-emerald-500 bg-opacity-30 flex items-center justify-center shadow-lg hover:shadow-emerald-400 transition-shadow duration-300 hover:scale-105">
+        <Link to="" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
           <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
             Loan Request
           </span>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navigate } from "react-router";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function CreateEmployee() {
   const [formData, setFormData] = useState({
@@ -10,8 +11,8 @@ export default function CreateEmployee() {
     department: "",
   });
 
-  const [successMsg, setSuccessMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  // const [successMsg, setSuccessMsg] = useState("");
+  // const [errorMsg, setErrorMsg] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,8 +21,8 @@ export default function CreateEmployee() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccessMsg("");
-    setErrorMsg("");
+    // setSuccessMsg("");
+    // setErrorMsg("");
 
     try {
       const response = await fetch("http://localhost:5000/api/create-employee", {
@@ -33,7 +34,8 @@ export default function CreateEmployee() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Something went wrong");
 
-      setSuccessMsg("Employee created successfully!");
+      // setSuccessMsg("Employee created successfully!");
+      toast.success("Employee created successfully!");
       Navigate(-1)
       setFormData({
         name: "",
@@ -43,7 +45,8 @@ export default function CreateEmployee() {
         department: "",
       });
     } catch (err) {
-      setErrorMsg(err.message);
+      // setErrorMsg(err.message);
+      toast.error(err.message || "Failed to create employee");
     }
   };
 
@@ -52,8 +55,8 @@ export default function CreateEmployee() {
         <div className="max-w-xl mx-auto p-6 bg-trasparent  rounded-2xl shadow-2xl shadow-black mt-10">
       <h2 className="text-2xl font-bold mb-6 text-center text-black">Create New Employee</h2>
       
-      {successMsg && <p className="mb-4 text-green-600">{successMsg}</p>}
-      {errorMsg && <p className="mb-4 text-red-600">{errorMsg}</p>}
+      {/* {successMsg && <p className="mb-4 text-green-600">{successMsg}</p>}
+      {errorMsg && <p className="mb-4 text-red-600">{errorMsg}</p>} */}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <label className="p-3 text-black font-bold">Name</label>
@@ -113,6 +116,7 @@ export default function CreateEmployee() {
           Create Employee
         </button>
       </form>
+      <ToastContainer/>
     </div>
     </div>
   );

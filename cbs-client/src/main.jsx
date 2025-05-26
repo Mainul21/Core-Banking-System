@@ -12,6 +12,7 @@ import ProtectedRoute from "./Layout/Authentication/Protected";
 import Transaction from "./Layout/Components/Transaction";
 import FundTransfer from "./Layout/Components/FundTransfer";
 import CreateEmployee from "./Layout/Components/CreateEmployee";
+import LoanRequest from "./Layout/Components/LoanRequest";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -28,6 +29,7 @@ createRoot(document.getElementById("root")).render(
         <Route element={<ProtectedRoute allowedRoles={["employee"]} />}>
           <Route path="/employee-dashboard" element={<EmployeeDashBoard />} />
           <Route path="/openAccount" element={<OpenAccount />} />
+          <Route path="/loan-request" element={<LoanRequest />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["customer"]} />}>
@@ -35,6 +37,7 @@ createRoot(document.getElementById("root")).render(
         </Route>
         <Route path="/transactions" element={<Transaction/>} />
         <Route path="/fund-transfer" element={<FundTransfer/>} />
+
       </Routes>
     </AuthProvider>
   </BrowserRouter>
