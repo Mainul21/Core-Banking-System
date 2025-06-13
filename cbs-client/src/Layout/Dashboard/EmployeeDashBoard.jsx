@@ -235,7 +235,6 @@ const EmployeeDashBoard = () => {
           </div>
         )}
       </section>
-
       {/* Feature Cards */}
       <nav className="flex flex-col md:flex-row items-center justify-center gap-8 mt-12 w-full max-w-6xl">
         <Link to="/OpenAccount" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
@@ -253,7 +252,7 @@ const EmployeeDashBoard = () => {
             Transfer Fund
           </span>
         </Link>
-        <Link to="" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
+        <Link to="/loan-request" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
           <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
             Loan Request
           </span>

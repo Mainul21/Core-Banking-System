@@ -95,24 +95,26 @@ ALTER TABLE audit_logs ADD COLUMN target_id INTEGER;
 
 CREATE TABLE loans (
     id SERIAL PRIMARY KEY,
-    
-    customer_id INT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
-    requested_by INT NOT NULL REFERENCES employees(id) ON DELETE SET NULL,
-    approved_by INT REFERENCES admins(id) ON DELETE SET NULL,
-    
+
+    account_number VARCHAR(20) NOT NULL REFERENCES customers(account_number) ON DELETE CASCADE,
+    requested_by VARCHAR(20) NOT NULL REFERENCES employees(employee_id) ON DELETE SET NULL,
+    approved_by VARCHAR(20) REFERENCES admins(admin_id) ON DELETE SET NULL,
+
     amount DECIMAL(15, 2) NOT NULL CHECK (amount > 0),
-    term_months INT NOT NULL CHECK (term_months > 0),  -- e.g., 6 months
-    interest_rate DECIMAL(5, 2) NOT NULL CHECK (interest_rate >= 0), -- e.g., 5.5%
-    
-    monthly_due DECIMAL(15, 2),  -- calculated after approval
-    penalty_rate DECIMAL(5, 2) DEFAULT 0.00 CHECK (penalty_rate >= 0),  -- e.g., 2% per late month
-    
+    term_months INT NOT NULL CHECK (term_months > 0),
+    interest_rate DECIMAL(5, 2) NOT NULL CHECK (interest_rate >= 0),
+
+    monthly_due DECIMAL(15, 2),
+    penalty_rate DECIMAL(5, 2) DEFAULT 0.20 CHECK (penalty_rate >= 0),
+
     status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
-    
+
     requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    approved_at TIMESTAMP,
-    completed_at TIMESTAMP
+    approved_at TIMESTAMP,  -- nullable is fine, will be set on approval
+    completed_at TIMESTAMP  -- nullable is fine, set when loan is fully paid
 );
+ALTER TABLE loans ADD COLUMN purpose TEXT NOT NULL;
+
 
 CREATE TABLE loan_payments (
     id SERIAL PRIMARY KEY,

@@ -10,6 +10,8 @@ const transactionRoutes = require("./routes/transaction");
 const customerTransaction = require("./routes/customerTransaction");
 const fundTransferRoutes = require("./routes/fundTransfer");
 const createEmployeeRoutes = require("./routes/createEmployee"); 
+const loanRequestRoutes = require("./routes/loanRequest"); 
+const loanApprovalRoutes = require("./routes/loanApproval"); 
 
 const app = express();
 const port = 5000 || process.env.PORT;
@@ -28,7 +30,8 @@ app.use("/api/transaction", transactionRoutes); // Transaction route
 app.use("/api/customer-transaction", customerTransaction); // customer transaction route
 app.use("/api/fund-transfer", fundTransferRoutes); // fund transfer route
 app.use("/api/create-employee", createEmployeeRoutes); // Create employee route
-
+app.use("/api/loan-request", loanRequestRoutes); // Loan request route
+app.use("/api/loan-approval", loanApprovalRoutes); // Loan approval route
 
 // Audit Logs
 // Get audit logs for admin dashboard
@@ -154,6 +157,47 @@ app.delete("/api/employees/:id", async (req, res) => {
     res.status(500).json({ message: "Server error deleting employee" });
   }
 });
+
+// delete customer account
+app.delete("/api/customers/:id", async (req, res) => {
+  const customerId = req.params.id;
+  console.log("Deleting customer with ID:", customerId);
+
+  try {
+    // 1. Find user_id linked to customer ID
+    const customerResult = await pool.query(
+      "SELECT id FROM customers WHERE id = $1",
+      [customerId]
+    );
+    console.log("Customer found:", customerResult.rows);
+
+    if (customerResult.rowCount === 0) {
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
+    const userId = customerResult.rows[0].id;
+    console.log("userId found:", userId);
+
+    // 2. Delete user with the retrieved userId if role is 'customer'
+    const deleteUser = await pool.query(
+      "DELETE FROM users WHERE id = $1 AND role = 'customer'",
+      [userId]
+    );
+
+    if (deleteUser.rowCount === 0) {
+      return res.status(404).json({ message: "User not found or already deleted" });
+    }
+
+    // 3. Optionally delete customer record if not already deleted by CASCADE
+    await pool.query("DELETE FROM customers WHERE id = $1", [customerId]);
+
+    res.status(200).json({ message: "Customer deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting customer:", err.message);
+    res.status(500).json({ message: "Server error deleting customer" });
+  }
+});
+
 
 
 

@@ -9,6 +9,8 @@ const AdminDashBoard = () => {
   const [employees, setEmployees] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [audit, setAudit] = useState([]);
+  const [loans, setLoans] = useState([]);
+  const [showLoans, setShowLoans] = useState(false);
   const [showAudit, setShowAudit] = useState(false);
   const [showTransactions, setShowTransactions] = useState(false);
   const [showCustomers, setShowCustomers] = useState(false);
@@ -31,10 +33,13 @@ const AdminDashBoard = () => {
         const custData = await custRes.json();
         const auditData = await auditRes.json();
 
+
+
         setData(txData);
         setEmployees(empData);
         setCustomers(custData);
         setAudit(auditData);
+        fetchPendingLoans();
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -43,20 +48,28 @@ const AdminDashBoard = () => {
     fetchData();
   }, []);
 
-  const handleDelete = async (id) => {
-  const confirmDelete = window.confirm("Are you sure you want to delete this employee?");
+  const handleCustomerDelete = async (id) => {
+    console.log("Deleting customer with ID:", id);
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this customer?"
+  );
   if (!confirmDelete) return;
 
   try {
-    const response = await fetch(`http://localhost:5000/api/employees/${id}`, {
-      method: "DELETE",
-    });
+    const response = await fetch(
+      `http://localhost:5000/api/customers/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
 
     if (response.ok) {
-      setEmployees(employees.filter((emp) => emp.id !== id));
-      toast.success("Employee deleted successfully.");
+      setCustomers(customers.filter((cust) => cust.id !== id));
+      toast.success("Customer deleted successfully.");
     } else {
-      // Try to parse JSON only if there's content
       let errorMessage = "Unknown error";
       try {
         const errorData = await response.json();
@@ -64,12 +77,46 @@ const AdminDashBoard = () => {
       } catch {
         errorMessage = "No detailed error message returned";
       }
-      toast.error("Failed to delete employee: " + errorMessage);
+      toast.error("Failed to delete customer: " + errorMessage);
     }
   } catch (error) {
-    toast.error("Error deleting employee: " + error.message);
+    toast.error("Error deleting customer: " + error.message);
   }
 };
+
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this employee?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/employees/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (response.ok) {
+        setEmployees(employees.filter((emp) => emp.id !== id));
+        toast.success("Employee deleted successfully.");
+      } else {
+        // Try to parse JSON only if there's content
+        let errorMessage = "Unknown error";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || JSON.stringify(errorData);
+        } catch {
+          errorMessage = "No detailed error message returned";
+        }
+        toast.error("Failed to delete employee: " + errorMessage);
+      }
+    } catch (error) {
+      toast.error("Error deleting employee: " + error.message);
+    }
+  };
 
   useEffect(() => {
     const fetchFundTransfers = async () => {
@@ -84,6 +131,86 @@ const AdminDashBoard = () => {
 
     fetchFundTransfers();
   }, []);
+
+  const fetchPendingLoans = async () => {
+  try {
+    const res = await fetch("http://localhost:5000/api/loan-request/pending", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch pending loans");
+    }
+
+    const loanData = await res.json();
+    setLoans(loanData);
+  } catch (error) {
+    console.error("Error fetching pending loans:", error);
+    toast.error("Error fetching pending loans");
+  }
+};
+
+
+  const handleApproveLoan = async (loanId) => {
+  const confirm = window.confirm("Are you sure you want to approve this loan?");
+  if (!confirm) return;
+
+  try {
+    const res = await fetch(`http://localhost:5000/api/loan-approval/approve/${loanId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      toast.success("Loan approved successfully!");
+      // Optionally, refresh loan list
+      setLoans((prev) => ({
+        ...prev,
+        pendingLoans: prev.pendingLoans.filter((loan) => loan.id !== loanId),
+      }));
+    } else {
+      toast.error(result.error || "Failed to approve loan");
+    }
+  } catch (error) {
+    console.error("Error approving loan:", error);
+    toast.error("Something went wrong while approving the loan");
+  }
+};
+
+const handleRejectLoan = async (loanId) => {
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/loan-approval/reject/${loanId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    if (response.ok) {
+      toast.success("Loan rejected successfully.");
+      fetchPendingLoans(); // refresh list
+    } else {
+      const errorData = await response.json();
+      toast.error(`Failed to reject loan: ${errorData.error}`);
+    }
+  } catch (error) {
+    toast.error("Error rejecting loan: " + error.message);
+  }
+};
+
 
   if (!data) return <div className="text-center p-10">Loading...</div>;
 
@@ -102,10 +229,11 @@ const AdminDashBoard = () => {
         </button>
       </div>
       <div className="flex justify-center mb-6">
-        <Link
-          to="/create-employee"><button className="btn bg-emerald-500 hover:bg-blue-500 p-4">
-          Create Employee
-        </button></Link>
+        <Link to="/create-employee">
+          <button className="btn bg-emerald-500 hover:bg-blue-500 p-4">
+            Create Employee
+          </button>
+        </Link>
       </div>
 
       {/* Stats Section */}
@@ -184,6 +312,70 @@ const AdminDashBoard = () => {
           </table>
         </div>
       )}
+      {/* Loan request */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Loan Requests</h2>
+        <button
+          onClick={() => setShowLoans((prev) => !prev)}
+          className="bg-emerald-500 hover:bg-emerald-600 text-black px-4 py-2 rounded-lg"
+        >
+          {showLoans ? "Hide Loand Request" : "Show Loans Request"}
+        </button>
+      </div>
+      {showLoans && (
+        <div className="overflow-x-auto bg-transparent shadow rounded-2xl p-4 mb-8">
+          <table className="min-w-full text-sm text-center">
+            <thead className="bg-emerald-500 text-white">
+              <tr>
+                <th>Account Number</th>
+                <th>Requested By</th>
+                <th>Amount</th>
+                <th>Term Months</th>
+                <th>Interest Rate</th>
+                <th>Status</th>
+                <th>Purpose</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {console.log(loans)}
+              {loans.pendingLoans.map((loan) => (
+                <tr
+                  key={loan.id}
+                  className="border-t hover:bg-gray-50 hover:text-black"
+                >
+                  <td>{loan.account_number}</td>
+                  <td>{loan.requested_by}</td>
+                  <td>৳ {parseFloat(loan.amount).toFixed(2)}</td>
+                  <td>{loan.term_months}</td>
+                  <td>{loan.interest_rate}%</td>
+                  <td
+                    className={`capitalize font-semibold ${
+                      loan.status === "pending"
+                        ? "text-yellow-600"
+                        : loan.status === "approved"
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {loan.status}
+                  </td>
+                  <td>{loan.purpose}</td>
+                  <td>
+                    {/* Example action buttons like approve/reject */}
+                    <button onClick={()=>handleApproveLoan(loan.id)} className="text-green-600 hover:underline mr-2">
+                      Approve
+                    </button>
+                    <button onClick={()=> handleRejectLoan(loan.id)} className="text-red-600 hover:underline">
+                      Reject
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Employees */}
       <div className="flex justify-between items-center mb-4">
@@ -214,7 +406,10 @@ const AdminDashBoard = () => {
                   <td>{emp.name}</td>
                   <td>{emp.email}</td>
                   <td>
-                    <button className="text-red-600 hover:underline" onClick={() => handleDelete(emp.id)}>
+                    <button
+                      className="text-red-600 hover:underline"
+                      onClick={() => handleDelete(emp.id)}
+                    >
                       Delete
                     </button>
                   </td>
@@ -258,7 +453,7 @@ const AdminDashBoard = () => {
                   <td>{cust.account_number}</td>
                   <td>৳ {parseFloat(cust.balance).toFixed(2)}</td>
                   <td>
-                    <button className="text-red-600 hover:underline">
+                    <button className="text-red-600 hover:underline" onClick={() => handleCustomerDelete(cust.id)}>
                       Delete
                     </button>
                   </td>
@@ -331,7 +526,7 @@ const AdminDashBoard = () => {
       {/* Audit Logs */}
       {/* Audit Logs */}
       <div className="flex justify-between items-center mb-4 hover:text-black">
-        <h2 className="text-xl font-bold">Audit Logs</h2>
+        <h2 className="text-xl font-bold text-white hover:text-white">Audit Logs</h2>
         <button
           onClick={() => setShowAudit((prev) => !prev)}
           className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg"
@@ -371,7 +566,9 @@ const AdminDashBoard = () => {
                   </button>
                   <dialog id="my_modal_1" className="modal">
                     <div className="modal-box">
-                      <h3 className="font-bold text-lg text-white">Audit Data</h3>
+                      <h3 className="font-bold text-lg text-white">
+                        Audit Data
+                      </h3>
                       <h2 className="py-4 flex flex-col text-white">
                         Sender:{log.metadata.sender_account_number} <br />
                         Receiver:{log.metadata.receiver_account_number} <br />
@@ -391,9 +588,8 @@ const AdminDashBoard = () => {
               ))}
             </tbody>
           </table>
-          <ToastContainer/>
+          <ToastContainer />
         </div>
-        
       )}
     </div>
   );
