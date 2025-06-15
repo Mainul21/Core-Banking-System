@@ -18,6 +18,8 @@ const CustomerDashBoard = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   // const navigate = useNavigate();
+  const [loanRequests, setLoanRequests] = useState([]);
+  const [showLoans, setShowLoans] = useState(false);
 
   useEffect(() => {
     const message = localStorage.getItem("showLoginToast");
@@ -26,6 +28,38 @@ const CustomerDashBoard = () => {
       localStorage.removeItem("showLoginToast");
     }
   }, []);
+
+  useEffect(() => {
+    const fetchLoans = async () => {
+      try {
+        const token = localStorage.getItem("token"); // your JWT stored somewhere
+        if (!token) {
+          toast.error("User not authenticated");
+          return;
+        }
+
+        const res = await fetch("http://localhost:5000/api/customer-loan", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setLoanRequests(data);
+        } else {
+          toast.error(
+            "Failed to load loan data: " + (data.message || res.status)
+          );
+        }
+      } catch (err) {
+        toast.error("Error loading loans: " + err.message);
+      }
+    };
+
+    if (showLoans) fetchLoans();
+  }, [showLoans]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -46,7 +80,7 @@ const CustomerDashBoard = () => {
           toast.error("Failed to load transactions");
         }
       } catch (err) {
-        toast.error("Server error"+err.message, {
+        toast.error("Server error" + err.message, {
           position: "top-right",
         });
       }
@@ -90,6 +124,54 @@ const CustomerDashBoard = () => {
     doc.save(`statement-${user.account_number}.pdf`);
   };
 
+  const handleLoanPayment = async (paymentId) => {
+    try {
+      const token = localStorage.getItem("token"); // or wherever you store JWT
+
+      const res = await fetch("http://localhost:5000/api/customer-loan/repay", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // include token for auth
+        },
+        body: JSON.stringify({ payment_id: paymentId }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(data.message || "Payment successful!");
+
+        // Update your loan payments or loan requests state here.
+        // Since you updated only one payment, update its status locally.
+        setLoanRequests((prev) =>
+          prev.map((loan) => {
+            // Find the loan that has this paymentId in its payment_schedule
+            if (loan.payment_schedule.some((p) => p.id === paymentId)) {
+              return {
+                ...loan,
+                payment_schedule: loan.payment_schedule.map((p) =>
+                  p.id === paymentId
+                    ? {
+                        ...p,
+                        status: "paid",
+                        paid_at: new Date().toISOString(),
+                      }
+                    : p
+                ),
+              };
+            }
+            return loan;
+          })
+        );
+      } else {
+        toast.error(data.error || "Payment failed.");
+      }
+    } catch (err) {
+      toast.error("Server error: " + err.message);
+    }
+  };
+
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -102,13 +184,16 @@ const CustomerDashBoard = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/change-password", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id, confirmPassword }),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/change-password",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id, confirmPassword }),
+        }
+      );
 
       const data = await response.json();
 
@@ -123,9 +208,10 @@ const CustomerDashBoard = () => {
         });
       }
     } catch (error) {
-      toast.error("Server error"+error.message, { position: "top-center" });
+      toast.error("Server error" + error.message, { position: "top-center" });
     }
   };
+  console.log(loanRequests);
 
   if (!user)
     return <div className="text-white text-center mt-10">Loading...</div>;
@@ -144,10 +230,7 @@ const CustomerDashBoard = () => {
           <span className="font-bold">Account Number:</span> {account_number}
         </p>
         <div className="flex justify-center items-center gap-3 text-xl font-semibold">
-          <span>
-            Balance:{" "}
-            {showBalance ? (info ? info : balance) : "****"}
-          </span>
+          <span>Balance: {showBalance ? (info ? info : balance) : "****"}</span>
           <button
             onClick={toggleBalance}
             aria-label="Toggle balance visibility"
@@ -218,7 +301,9 @@ const CustomerDashBoard = () => {
             onChange={(e) => setFromDate(e.target.value)}
             className="input bg-emerald-900 border-emerald-600 text-white rounded-lg px-3 py-2"
           />
-          <span className="text-white text-lg font-semibold select-none">to</span>
+          <span className="text-white text-lg font-semibold select-none">
+            to
+          </span>
           <input
             type="date"
             value={toDate}
@@ -258,7 +343,10 @@ const CustomerDashBoard = () => {
               <tbody>
                 {transactions.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="text-center py-6 text-emerald-900 font-semibold">
+                    <td
+                      colSpan="4"
+                      className="text-center py-6 text-emerald-900 font-semibold"
+                    >
                       No transactions found.
                     </td>
                   </tr>
@@ -269,13 +357,97 @@ const CustomerDashBoard = () => {
                       className="border-b hover:bg-emerald-500 transition text-center text-black"
                     >
                       <td className="px-5 py-3">{txn.id}</td>
-                      <td className="px-5 py-3 capitalize">{txn.transaction_type}</td>
+                      <td className="px-5 py-3 capitalize">
+                        {txn.transaction_type}
+                      </td>
                       <td className="px-5 py-3">${txn.amount}</td>
                       <td className="px-5 py-3">
                         {new Date(txn.created_at).toLocaleString()}
                       </td>
                     </tr>
                   ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* View Loans Button */}
+      <section className="max-w-4xl w-full px-2 md:px-6">
+        <button
+          onClick={() => setShowLoans(!showLoans)}
+          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg px-4 py-3 mb-4 font-semibold transition"
+        >
+          {showLoans ? "Hide Loans" : "View Pending Loans"}
+        </button>
+
+        {showLoans && (
+          <div className="overflow-x-auto bg-white bg-opacity-80 rounded-lg shadow-lg max-h-[400px] overflow-y-auto">
+            <table className="min-w-full table-auto text-left border-collapse">
+              <thead className="bg-emerald-600 text-white sticky top-0">
+                <tr>
+                  <th className="px-5 py-3">Loan ID</th>
+                  <th className="px-5 py-3">Amount</th>
+                  <th className="px-5 py-3">Remaining</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loanRequests.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="text-center py-6 text-emerald-900 font-semibold"
+                    >
+                      No pending loans.
+                    </td>
+                  </tr>
+                ) : (
+                  loanRequests.map((loan) => {
+                    // Find the first unpaid installment
+                    const nextPayment = loan.payment_schedule?.find(
+                      (p) => p.status !== "paid"
+                    );
+
+                    return (
+                      <tr
+                        key={loan.id}
+                        className="border-b hover:bg-emerald-500 transition text-center text-black"
+                      >
+                        <td className="px-5 py-3">{loan.id}</td>
+                        <td className="px-5 py-3">${loan.amount}</td>
+                        <td className="px-5 py-3">
+                          $
+                          {loan.payment_schedule
+                            ?.filter((p) => p.status !== "paid")
+                            .reduce(
+                              (sum, p) => sum + parseFloat(p.amount_due),
+                              0
+                            )
+                            .toFixed(2)}
+                        </td>
+                        <td className="px-5 py-3 capitalize">{loan.status}</td>
+                        <td className="px-5 py-3">
+                          {loan.status === "approved" && nextPayment ? (
+                            <button
+                              onClick={() => handleLoanPayment(nextPayment.id)} // ✅ Use payment ID
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded"
+                            >
+                              Pay EMI
+                            </button>
+                          ) : (
+                            <span className="text-green-700 font-semibold">
+                              {loan.status !== "approved"
+                                ? "Not Approved"
+                                : "Paid"}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -291,7 +463,9 @@ const CustomerDashBoard = () => {
         overlayClassName="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-start z-50"
         ariaHideApp={false}
       >
-        <h2 className="text-2xl font-bold mb-6 text-emerald-900">Change Password</h2>
+        <h2 className="text-2xl font-bold mb-6 text-emerald-900">
+          Change Password
+        </h2>
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <input
             name="newPassword"
@@ -331,9 +505,9 @@ const CustomerDashBoard = () => {
       {/* Feature Cards */}
       <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-white p-6 rounded-lg w-full max-w-4xl">
         <Link to="/transactions">
-        <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
-          <h1 className="text-center">Make Transaction</h1>
-        </div>
+          <div className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
+            <h1 className="text-center">Make Transaction</h1>
+          </div>
         </Link>
 
         <Link to="/fund-transfer">

@@ -12,6 +12,8 @@ const fundTransferRoutes = require("./routes/fundTransfer");
 const createEmployeeRoutes = require("./routes/createEmployee"); 
 const loanRequestRoutes = require("./routes/loanRequest"); 
 const loanApprovalRoutes = require("./routes/loanApproval"); 
+const customerLoanRoutes = require('./routes/customerLoan');
+
 
 const app = express();
 const port = 5000 || process.env.PORT;
@@ -32,6 +34,7 @@ app.use("/api/fund-transfer", fundTransferRoutes); // fund transfer route
 app.use("/api/create-employee", createEmployeeRoutes); // Create employee route
 app.use("/api/loan-request", loanRequestRoutes); // Loan request route
 app.use("/api/loan-approval", loanApprovalRoutes); // Loan approval route
+app.use('/api/customer-loan', customerLoanRoutes); // Customer loan route
 
 // Audit Logs
 // Get audit logs for admin dashboard
