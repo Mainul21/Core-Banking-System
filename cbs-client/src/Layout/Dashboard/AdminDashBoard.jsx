@@ -33,8 +33,6 @@ const AdminDashBoard = () => {
         const custData = await custRes.json();
         const auditData = await auditRes.json();
 
-
-
         setData(txData);
         setEmployees(empData);
         setCustomers(custData);
@@ -46,44 +44,46 @@ const AdminDashBoard = () => {
     };
 
     fetchData();
+    // const interval = setInterval(fetchData, 60000); // Refresh every minute
+    // return () => clearInterval(interval); // Cleanup on unmount
   }, []);
+  console.log(audit)
 
   const handleCustomerDelete = async (id) => {
     console.log("Deleting customer with ID:", id);
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this customer?"
-  );
-  if (!confirmDelete) return;
-
-  try {
-    const response = await fetch(
-      `http://localhost:5000/api/customers/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this customer?"
     );
+    if (!confirmDelete) return;
 
-    if (response.ok) {
-      setCustomers(customers.filter((cust) => cust.id !== id));
-      toast.success("Customer deleted successfully.");
-    } else {
-      let errorMessage = "Unknown error";
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.message || JSON.stringify(errorData);
-      } catch {
-        errorMessage = "No detailed error message returned";
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/customers/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        setCustomers(customers.filter((cust) => cust.id !== id));
+        toast.success("Customer deleted successfully.");
+      } else {
+        let errorMessage = "Unknown error";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || JSON.stringify(errorData);
+        } catch {
+          errorMessage = "No detailed error message returned";
+        }
+        toast.error("Failed to delete customer: " + errorMessage);
       }
-      toast.error("Failed to delete customer: " + errorMessage);
+    } catch (error) {
+      toast.error("Error deleting customer: " + error.message);
     }
-  } catch (error) {
-    toast.error("Error deleting customer: " + error.message);
-  }
-};
-
+  };
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
@@ -133,84 +133,90 @@ const AdminDashBoard = () => {
   }, []);
 
   const fetchPendingLoans = async () => {
-  try {
-    const res = await fetch("http://localhost:5000/api/loan-request/pending", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    try {
+      const res = await fetch(
+        "http://localhost:5000/api/loan-request/pending",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-    if (!res.ok) {
-      throw new Error("Failed to fetch pending loans");
+      if (!res.ok) {
+        throw new Error("Failed to fetch pending loans");
+      }
+
+      const loanData = await res.json();
+      setLoans(loanData);
+    } catch (error) {
+      console.error("Error fetching pending loans:", error);
+      toast.error("Error fetching pending loans");
     }
-
-    const loanData = await res.json();
-    setLoans(loanData);
-  } catch (error) {
-    console.error("Error fetching pending loans:", error);
-    toast.error("Error fetching pending loans");
-  }
-};
-
+  };
 
   const handleApproveLoan = async (loanId) => {
-  const confirm = window.confirm("Are you sure you want to approve this loan?");
-  if (!confirm) return;
-
-  try {
-    const res = await fetch(`http://localhost:5000/api/loan-approval/approve/${loanId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    const result = await res.json();
-
-    if (res.ok) {
-      toast.success("Loan approved successfully!");
-      // Optionally, refresh loan list
-      setLoans((prev) => ({
-        ...prev,
-        pendingLoans: prev.pendingLoans.filter((loan) => loan.id !== loanId),
-      }));
-    } else {
-      toast.error(result.error || "Failed to approve loan");
-    }
-  } catch (error) {
-    console.error("Error approving loan:", error);
-    toast.error("Something went wrong while approving the loan");
-  }
-};
-
-const handleRejectLoan = async (loanId) => {
-  try {
-    const response = await fetch(
-      `http://localhost:5000/api/loan-approval/reject/${loanId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
+    const confirm = window.confirm(
+      "Are you sure you want to approve this loan?"
     );
+    if (!confirm) return;
 
-    if (response.ok) {
-      toast.success("Loan rejected successfully.");
-      fetchPendingLoans(); // refresh list
-    } else {
-      const errorData = await response.json();
-      toast.error(`Failed to reject loan: ${errorData.error}`);
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/loan-approval/approve/${loanId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      const result = await res.json();
+
+      if (res.ok) {
+        toast.success("Loan approved successfully!");
+        // Optionally, refresh loan list
+        setLoans((prev) => ({
+          ...prev,
+          pendingLoans: prev.pendingLoans.filter((loan) => loan.id !== loanId),
+        }));
+      } else {
+        toast.error(result.error || "Failed to approve loan");
+      }
+    } catch (error) {
+      console.error("Error approving loan:", error);
+      toast.error("Something went wrong while approving the loan");
     }
-  } catch (error) {
-    toast.error("Error rejecting loan: " + error.message);
-  }
-};
+  };
 
+  const handleRejectLoan = async (loanId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/loan-approval/reject/${loanId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        toast.success("Loan rejected successfully.");
+        fetchPendingLoans(); // refresh list
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to reject loan: ${errorData.error}`);
+      }
+    } catch (error) {
+      toast.error("Error rejecting loan: " + error.message);
+    }
+  };
 
   if (!data) return <div className="text-center p-10">Loading...</div>;
 
@@ -312,14 +318,15 @@ const handleRejectLoan = async (loanId) => {
           </table>
         </div>
       )}
-      {/* Loan request */}
+
+      {/* Loan Request */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Loan Requests</h2>
         <button
           onClick={() => setShowLoans((prev) => !prev)}
           className="bg-emerald-500 hover:bg-emerald-600 text-black px-4 py-2 rounded-lg"
         >
-          {showLoans ? "Hide Loand Request" : "Show Loans Request"}
+          {showLoans ? "Hide Loan Request" : "Show Loan Request"}
         </button>
       </div>
       {showLoans && (
@@ -338,7 +345,6 @@ const handleRejectLoan = async (loanId) => {
               </tr>
             </thead>
             <tbody>
-              {console.log(loans)}
               {loans.pendingLoans.map((loan) => (
                 <tr
                   key={loan.id}
@@ -362,11 +368,16 @@ const handleRejectLoan = async (loanId) => {
                   </td>
                   <td>{loan.purpose}</td>
                   <td>
-                    {/* Example action buttons like approve/reject */}
-                    <button onClick={()=>handleApproveLoan(loan.id)} className="text-green-600 hover:underline mr-2">
+                    <button
+                      onClick={() => handleApproveLoan(loan.id)}
+                      className="text-green-600 hover:underline mr-2"
+                    >
                       Approve
                     </button>
-                    <button onClick={()=> handleRejectLoan(loan.id)} className="text-red-600 hover:underline">
+                    <button
+                      onClick={() => handleRejectLoan(loan.id)}
+                      className="text-red-600 hover:underline"
+                    >
                       Reject
                     </button>
                   </td>
@@ -453,7 +464,10 @@ const handleRejectLoan = async (loanId) => {
                   <td>{cust.account_number}</td>
                   <td>৳ {parseFloat(cust.balance).toFixed(2)}</td>
                   <td>
-                    <button className="text-red-600 hover:underline" onClick={() => handleCustomerDelete(cust.id)}>
+                    <button
+                      className="text-red-600 hover:underline"
+                      onClick={() => handleCustomerDelete(cust.id)}
+                    >
                       Delete
                     </button>
                   </td>
@@ -523,10 +537,12 @@ const handleRejectLoan = async (loanId) => {
           </table>
         </div>
       )}
-      {/* Audit Logs */}
+
       {/* Audit Logs */}
       <div className="flex justify-between items-center mb-4 hover:text-black">
-        <h2 className="text-xl font-bold text-white hover:text-white">Audit Logs</h2>
+        <h2 className="text-xl font-bold text-white hover:text-white">
+          Audit Logs
+        </h2>
         <button
           onClick={() => setShowAudit((prev) => !prev)}
           className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg"
@@ -555,42 +571,42 @@ const handleRejectLoan = async (loanId) => {
                   <td>{log.user_name}</td>
                   <td className="capitalize">{log.user_role}</td>
                   <td>{log.action}</td>
-                  {/* <td>{log.metadata}</td> */}
-                  <button
-                    className="btn  border-0"
-                    onClick={() =>
-                      document.getElementById("my_modal_1").showModal()
-                    }
-                  >
-                    open modal
-                  </button>
-                  <dialog id="my_modal_1" className="modal">
-                    <div className="modal-box">
-                      <h3 className="font-bold text-lg text-white">
-                        Audit Data
-                      </h3>
-                      <h2 className="py-4 flex flex-col text-white">
-                        Sender:{log.metadata.sender_account_number} <br />
-                        Receiver:{log.metadata.receiver_account_number} <br />
-                        amount:{log.metadata.amount} <br />
-                        Status:{log.metadata.status}
-                      </h2>
-                      <div className="modal-action">
-                        <form method="dialog">
-                          {/* if there is a button in form, it will close the modal */}
-                          <button className="btn">Close</button>
-                        </form>
+                  <td>
+                    <button
+                      className="btn border-0"
+                      onClick={() =>
+                        document.getElementById(`my_modal_${log.id}`).showModal()
+                      }
+                    >
+                      open modal
+                    </button>
+                    <dialog id={`my_modal_${log.id}`} className="modal">
+                      <div className="modal-box">
+                        <h3 className="font-bold text-lg text-white">
+                          Audit Data
+                        </h3>
+                        <h2 className="py-4 flex flex-col text-white">
+                          {log.metadata
+                            ? JSON.stringify(log.metadata, null, 2)
+                            : "No metadata available"}
+                        </h2>
+                        <div className="modal-action">
+                          <form method="dialog">
+                            <button className="btn">Close</button>
+                          </form>
+                        </div>
                       </div>
-                    </div>
-                  </dialog>
+                    </dialog>
+                  </td>
                   <td>{new Date(log.timestamp).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <ToastContainer />
         </div>
       )}
+      
+      <ToastContainer />
     </div>
   );
 };
