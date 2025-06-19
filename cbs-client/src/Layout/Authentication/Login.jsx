@@ -83,7 +83,7 @@ const Login = () => {
                   required
                 />
                 <div className="flex-col-reverse">
-                  <a className="link link-hover bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Forgot password?</a>
+                  <a onClick={()=>navigate('/reset-password')} className="link link-hover bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Forgot password?</a>
                 </div>
                 <div>
              

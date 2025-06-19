@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const authenticateToken = require('../middleware/authMiddleware');
-const logAudit = require('../auditLogger'); // <-- Audit logger
+const logAudit = require('../tools/auditLogger'); // <-- Audit logger
 
 router.post('/', authenticateToken, async (req, res) => {
     const {accountNumber, requested_by, amount, term_months, interest_rate, purpose} = req.body;

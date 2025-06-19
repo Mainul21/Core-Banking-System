@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../db");
-const logAudit = require("../auditLogger"); // Import the audit logger
+const logAudit = require("../tools/auditLogger"); // Import the audit logger
 
 // POST /api/transaction
 router.post("/", async (req, res) => {

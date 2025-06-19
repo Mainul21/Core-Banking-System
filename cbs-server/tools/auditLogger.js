@@ -1,4 +1,4 @@
-const pool = require("./db");
+const pool = require("../db");
 
 const logAudit = async ({ user_id, action, target_type, target_id = null, metadata = {} }) => {
   try {

@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const authenticateToken = require('../middleware/authMiddleware');
-const logAudit = require('../auditLogger');
+const logAudit = require('../tools/auditLogger');
+const { sendLoanNotification } = require('../emailService'); 
 
+// Approve a loan request
 // Approve a loan request
 router.patch('/approve/:id', authenticateToken, async (req, res) => {
     const user = req.user;
@@ -28,7 +30,7 @@ router.patch('/approve/:id', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'Loan already processed' });
         }
 
-        const { amount, term_months, interest_rate } = loan;
+        const { amount, term_months, interest_rate, account_number } = loan;
 
         // 2. Calculate EMI
         const P = parseFloat(amount);
@@ -60,7 +62,22 @@ router.patch('/approve/:id', authenticateToken, async (req, res) => {
             );
         }
 
-        // 5. Log audit
+        // 5. Get customer email using account_number (from customers table)
+        const customerResult = await pool.query(
+            "SELECT email FROM users WHERE id = (SELECT id FROM customers WHERE account_number = $1)",
+            [account_number] // Use account_number to get user email
+        );
+
+        if (customerResult.rowCount === 0) {
+            return res.status(404).json({ error: "Customer not found" });
+        }
+
+        const customerEmail = customerResult.rows[0].email;
+
+        // 6. Send an email to the customer about loan approval
+        await sendLoanNotification(customerEmail, "approved");
+
+        // 7. Log audit
         await logAudit({
             user_id: user.id,
             action: 'loan_approved',
@@ -85,6 +102,8 @@ router.patch('/approve/:id', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+
 
 // Reject a loan request
 router.patch('/reject/:id', authenticateToken, async (req, res) => {
@@ -118,7 +137,22 @@ router.patch('/reject/:id', authenticateToken, async (req, res) => {
       [user.admin_id, loanId]
     );
 
-    // 3. Log audit
+    // 3. Get customer email using account_number (from customers table)
+    const customerResult = await pool.query(
+      "SELECT email FROM users WHERE id = (SELECT id FROM customers WHERE account_number = $1)",
+      [loan.account_number] // Use account_number to get user email
+    );
+
+    if (customerResult.rowCount === 0) {
+      return res.status(404).json({ error: "Customer not found" });
+    }
+
+    const customerEmail = customerResult.rows[0].email;
+
+    // 4. Send an email to the customer about loan rejection
+    await sendLoanNotification(customerEmail, "rejected");
+
+    // 5. Log audit
     await logAudit({
       user_id: user.id,
       action: 'loan_rejected',
@@ -136,6 +170,7 @@ router.patch('/reject/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 

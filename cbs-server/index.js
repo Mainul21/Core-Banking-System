@@ -258,6 +258,7 @@ app.get("/api/transaction-history", async (req, res) => {
 app.patch("/api/change-password", async (req, res) => {
   try {
     const { id, confirmPassword } = req.body; // Extract from body
+    console.log("Updating password for ID:", id);
 
     if (!id || !confirmPassword) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -278,6 +279,82 @@ app.patch("/api/change-password", async (req, res) => {
     res.status(500).json({ error: "Database query failed" });
   }
 });
+// forget password
+
+app.patch("/api/forgot-password", async (req, res) => {
+  try {
+    const { account_number, newPassword } = req.body;
+
+    if (!account_number || !newPassword) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    let userId = null;
+    let tableName = "";
+    let accountColumn = "";
+
+    
+
+    const customerResult = await pool.query(
+      "SELECT * FROM customers WHERE account_number = $1",
+      [account_number]
+    );
+
+    if (customerResult.rowCount > 0) {
+      userId = customerResult.rows[0].id;
+      tableName = "customers";
+      accountColumn = "account_number";
+    }
+
+    else {
+      const employeeResult = await pool.query(
+        "SELECT * FROM employees WHERE employee_id = $1",
+        [account_number]
+      );
+      if (employeeResult.rowCount > 0) {
+        userId = employeeResult.rows[0].id;
+        tableName = "employees";
+        accountColumn = "employee_id";
+      }
+    }
+
+    if (!userId) {
+      const adminResult = await pool.query(
+        "SELECT * FROM admins WHERE admin_id = $1",
+        [account_number]
+      );
+      if (adminResult.rowCount > 0) {
+        userId = adminResult.rows[0].id;
+        tableName = "admins";
+        accountColumn = "admin_id";
+      }
+    }
+
+    if (!userId) {
+      return res.status(404).json({ error: "Account number not found" });
+    }
+
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+
+    const updateResult = await pool.query(
+      "UPDATE users SET password = $1 WHERE id = $2",
+      [hashedPassword, userId]
+    );
+
+    if (updateResult.rowCount === 0) {
+      return res.status(500).json({ error: "Failed to update password" });
+    }
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 
 //get user info for transaction
 app.get("/api/user", async (req, res) => {

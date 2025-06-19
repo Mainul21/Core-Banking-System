@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 const authenticateToken = require("../middleware/authMiddleware");
-const logAudit = require("../auditLogger");
+const logAudit = require("../tools/auditLogger");
 
 router.get("/", authenticateToken, async (req, res) => {
   try {

@@ -13,6 +13,7 @@ import Transaction from "./Layout/Components/Transaction";
 import FundTransfer from "./Layout/Components/FundTransfer";
 import CreateEmployee from "./Layout/Components/CreateEmployee";
 import LoanRequest from "./Layout/Components/LoanRequest";
+import ResetPassword from "./Layout/Components/ResetPassowrd"; 
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -20,6 +21,7 @@ createRoot(document.getElementById("root")).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         {/* PROTECTED ROUTES */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route path="/admin-dashboard" element={<AdminDashBoard />} />

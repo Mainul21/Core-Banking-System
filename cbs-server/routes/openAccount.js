@@ -1,7 +1,7 @@
 const express = require("express");
 const pool = require("../db");
 const bcrypt = require("bcryptjs");
-const logAudit = require("../auditLogger"); // Add this line at the top
+const logAudit = require("../tools/auditLogger"); // Add this line at the top
 
 const router = express.Router();
 
