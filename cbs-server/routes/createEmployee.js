@@ -10,12 +10,15 @@ router.post('/', async (req, res) => {
     email,
     password,
     employee_id,
-    department
+    department,
+    branch_id, // Add the branch_id from the request body
+    phone, // New phone field
+    address, // New address field
   } = req.body;
 
   try {
     // Validate input
-    if (!name || !email || !password || !employee_id || !department) {
+    if (!name || !email || !password || !employee_id || !department || !branch_id || !phone || !address) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -37,23 +40,32 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Employee ID already exists' });
     }
 
-    // 3. Hash password
+    // 3. Check if the branch exists (ensure a valid branch_id is passed)
+    const branchExists = await pool.query(
+      'SELECT id FROM branches WHERE id = $1',
+      [branch_id]
+    );
+    if (branchExists.rows.length === 0) {
+      return res.status(400).json({ message: 'Invalid branch selected' });
+    }
+
+    // 4. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 4. Insert into users table
+    // 5. Insert into users table
     const userInsert = await pool.query(
-      `INSERT INTO users (email, password, role, name)
-       VALUES ($1, $2, 'employee', $3)
+      `INSERT INTO users (email, password, role, name, phone_number, address)
+       VALUES ($1, $2, 'employee', $3, $4, $5)
        RETURNING id`,
-      [email, hashedPassword, name]
+      [email, hashedPassword, name, phone, address]
     );
     const userId = userInsert.rows[0].id;
 
-    // 5. Insert into employees table
+    // 6. Insert into employees table, with branch_id, phone, and address
     await pool.query(
-      `INSERT INTO employees (id, employee_id, department)
-       VALUES ($1, $2, $3)`,
-      [userId, employee_id, department]
+      `INSERT INTO employees (id, employee_id, department, branch_id)
+       VALUES ($1, $2, $3, $4)`,
+      [userId, employee_id, department, branch_id]
     );
 
     return res.status(201).json({ message: 'Employee account created successfully', userId });

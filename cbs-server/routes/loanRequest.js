@@ -16,6 +16,27 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     try{
+        const employeeQuery = await pool.query("SELECT branch_id FROM employees WHERE id = $1", [user.id]);
+        if (employeeQuery.rowCount === 0) {
+            return res.status(403).json({ error: 'Access denied. Employee not found.' });
+        }   
+
+        const employeeBranchId = employeeQuery.rows[0].branch_id;
+
+        const customerQuery = await pool.query(
+            "SELECT branch_id FROM customers WHERE account_number = $1",
+            [accountNumber]);
+        if (customerQuery.rowCount === 0) {
+            return res.status(404).json({ error: 'Customer not found' });
+        }
+
+        const customerId = customerQuery.rows[0].branch_id;
+
+        if (employeeBranchId !== customerId) {
+            return res.status(403).json({ error: 'Access denied. Customer does not belong to your branch.' });
+        }
+
+
         const requestQuery = await pool.query(
         'Insert into loans (account_number, requested_by, amount, term_months, interest_rate, purpose) values ($1, $2, $3, $4, $5, $6) RETURNING *',
         [accountNumber, requested_by, amount, term_months, interest_rate, purpose]
@@ -31,6 +52,7 @@ router.post('/', authenticateToken, async (req, res) => {
         target_id: loanRequest.id,
         metadata: {
             account_number: accountNumber,
+            branch_id: employeeBranchId,
             requested_by,
             amount,
             term_months,

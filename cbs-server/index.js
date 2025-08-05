@@ -13,6 +13,8 @@ const createEmployeeRoutes = require("./routes/createEmployee");
 const loanRequestRoutes = require("./routes/loanRequest"); 
 const loanApprovalRoutes = require("./routes/loanApproval"); 
 const customerLoanRoutes = require('./routes/customerLoan');
+const branchRoutes = require("./routes/branch"); 
+const statementRoutes = require("./routes/statement"); 
 
 
 const app = express();
@@ -35,6 +37,8 @@ app.use("/api/create-employee", createEmployeeRoutes); // Create employee route
 app.use("/api/loan-request", loanRequestRoutes); // Loan request route
 app.use("/api/loan-approval", loanApprovalRoutes); // Loan approval route
 app.use('/api/customer-loan', customerLoanRoutes); // Customer loan route
+app.use("/api/branches", branchRoutes); // Branch route
+app.use("/api/statement", statementRoutes); // Account statement route
 
 // Audit Logs
 // Get audit logs for admin dashboard

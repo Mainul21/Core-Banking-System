@@ -1,17 +1,16 @@
 const dotenv = require('dotenv').config();
- // Load environment variables from .env file
+
 const nodemailer = require('nodemailer');
 
 
-console.log(process.env.EMAIL_PASS, process.env.EMAIL_USER); // Debugging line to check if environment variables are loaded correctly
+// console.log(process.env.EMAIL_PASS, process.env.EMAIL_USER); 
 
-// Log email service initialization for debugging purposes
-// Create a reusable transporter object using the default SMTP transport
+
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Gmail as an email provider
+  service: 'gmail', 
   auth: {
-    user: process.env.EMAIL_USER,  // Your email address
-    pass: process.env.EMAIL_PASS,  // Your email password or app-specific password
+    user: process.env.EMAIL_USER,  
+    pass: process.env.EMAIL_PASS,  
   },
 });
 
@@ -22,10 +21,10 @@ const sendLoanNotification = async (customerEmail, loanStatus) => {
     : 'Unfortunately, your loan application has been rejected.';
 
   const mailOptions = {
-    from: process.env.EMAIL_USER, // sender address
-    to: customerEmail, // receiver address
-    subject: subject, // subject line
-    text: text, // plain text body
+    from: process.env.EMAIL_USER, 
+    to: customerEmail, 
+    subject: subject, 
+    text: text, 
   };
 
   try {

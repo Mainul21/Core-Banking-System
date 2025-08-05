@@ -94,7 +94,8 @@ const EmployeeDashBoard = () => {
         toast.success("Transfer approved!", { position: "top-right" });
         setPendingTransfers(pendingTransfers.filter((t) => t.id !== transferId));
       } else {
-        toast.error("Failed to approve transfer", { position: "top-right" });
+        const data = await response.json();
+        toast.error(data.message||"Failed to approve transfer", { position: "top-right" });
       }
     } catch (error) {
       toast.error(error.message, { position: "top-right" });

@@ -144,6 +144,7 @@ router.get('/pending', authenticateToken, async (req, res) => {
 
 router.put('/approve/:id', authenticateToken, async (req, res) => {
   const user = req.user;
+  console.log(user);
   if (user.role !== 'employee') {
     return res.status(403).json({ error: 'Access denied' });
   }
@@ -175,6 +176,18 @@ router.put('/approve/:id', authenticateToken, async (req, res) => {
     if (!sender || parseFloat(sender.balance) < parseFloat(transfer.amount)) {
       await pool.query('ROLLBACK');
       return res.status(400).json({ error: 'Insufficient balance for sender' });
+    }
+
+    const employeeBranchIdquery = await pool.query(
+      'SELECT branch_id FROM employees WHERE id = $1',
+      [user.id]);
+    const CustomerBranchIdQuery = await pool.query(
+      'SELECT branch_id FROM customers WHERE account_number = $1',
+      [transfer.sender_account_number]);
+
+    if (employeeBranchIdquery.rows[0].branch_id !== CustomerBranchIdQuery.rows[0].branch_id) {
+      await pool.query('ROLLBACK');
+      return res.status(403).json({ error: 'Unauthorized to appprove this transfer' });
     }
 
     await pool.query(

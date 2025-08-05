@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import emailjs from "@emailjs/browser";
 import Modal from "react-modal";
@@ -10,14 +10,31 @@ Modal.setAppElement("#root");
 const OpenAccount = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [accountDetails, setAccountDetails] = useState(null);
+  const [branches, setBranches] = useState([]); // State for storing branches
   const your_service_id = import.meta.env.VITE_EMAIL_SERVICE;
   const your_template_id = import.meta.env.VITE_EMAIL_TEMPLATE;
   const your_public_key = import.meta.env.VITE_EMAIL_PUBLIC_KEY;
   const navigate = useNavigate();
-  // Uncomment the following lines to log your EmailJS credentials (for debugging purposes only)
-  // console.log("Service ID:", your_service_id);
-  // console.log("Template ID:", your_template_id);
-  // console.log("Public Key:", your_public_key);
+
+  // Fetch branches from the backend
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/branches");
+        const data = await response.json();
+        if (response.ok) {
+          setBranches(data); // Set branches to state
+        } else {
+          toast.error("Failed to load branches.");
+        }
+      } catch (error) {
+        console.error("Error fetching branches:", error);
+        toast.error("Error fetching branches.");
+      }
+    };
+
+    fetchBranches();
+  }, []);
 
   const handleOpenAccount = async (e) => {
     e.preventDefault();
@@ -28,7 +45,8 @@ const OpenAccount = () => {
     const phone = form.phone.value;
     const address = form.address.value;
     const amount = form.amount.value;
-    const data = { name, email, phone, address, amount };
+    const branch_id = form.branch_id.value; // Get selected branch ID
+    const data = { name, email, phone, address, amount, branch_id };
 
     try {
       const response = await fetch("http://localhost:5000/api/account", {
@@ -146,6 +164,21 @@ const OpenAccount = () => {
               placeholder="Enter Amount"
               defaultValue="0.0"
             />
+
+            {/* Branch Selection Dropdown */}
+            <label className="block mb-1">Select Branch</label>
+            <select
+              name="branch_id"
+              className="input w-full mb-4"
+              required
+            >
+              <option value="">Select Branch</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
+            </select>
 
             <button className="btn btn-neutral w-full mt-4" value="submit">
               Create Customer Account

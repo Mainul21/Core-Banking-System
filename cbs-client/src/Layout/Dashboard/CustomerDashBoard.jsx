@@ -6,11 +6,12 @@ import Modal from "react-modal";
 import { Link } from "react-router";
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
-
+import FAQ from "../Components/FAQ";
 const CustomerDashBoard = () => {
   const { user, logout, info } = useContext(AuthContext);
   const { id, name, balance, account_number, email } = user;
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [ContactUsModal, setContactUsModal] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [showTransactions, setShowTransactions] = useState(false);
@@ -90,15 +91,22 @@ const CustomerDashBoard = () => {
   }, [showTransactions, id, filterType, fromDate, toDate]);
 
   const toggleBalance = () => setShowBalance(!showBalance);
+  const toggleContactUsModal = () => {
+    setContactUsModal(!ContactUsModal);
+  };
 
-  const downloadStatement = () => {
-    if (transactions.length === 0) {
-      toast.error("No transactions available to download", {
-        position: "top-center",
-      });
-      return;
-    }
-
+const downloadStatement = async () => {
+  try {
+    const response = await fetch(`http://localhost:5000/api/statement/${user.account_number}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // Include JWT token for authentication
+        },
+      }
+    );
+    const transactions = await response.json();
+    console.log(transactions);
     const doc = new jsPDF();
     doc.setFontSize(16);
     doc.text(`Account Statement for ${user.name}`, 14, 20);
@@ -106,7 +114,7 @@ const CustomerDashBoard = () => {
     doc.text(`Account Number: ${user.account_number}`, 14, 30);
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 40);
 
-    const tableColumn = ["Date", "Type", "Amount"];
+    const tableColumn = ["Date", "Transaction Type", "Amount"];
     const tableRows = transactions.map((transaction) => [
       new Date(transaction.created_at).toLocaleDateString(),
       transaction.transaction_type,
@@ -122,7 +130,11 @@ const CustomerDashBoard = () => {
     });
 
     doc.save(`statement-${user.account_number}.pdf`);
-  };
+  } catch (error) {
+    console.error('Error downloading statement:', error);
+  }
+};
+
 
   const handleLoanPayment = async (paymentId) => {
     try {
@@ -254,7 +266,7 @@ const CustomerDashBoard = () => {
             Change Password
           </button>
           <button
-            onClick={() => document.getElementById("my_modal_3").showModal()}
+            onClick={() => {toggleContactUsModal()}}
             className="btn bg-gray-700 hover:bg-gray-600 text-white rounded-full px-6 py-2 font-semibold shadow-md transition"
           >
             Contact Us
@@ -267,19 +279,8 @@ const CustomerDashBoard = () => {
           </button>
         </div>
 
-        <dialog
-          id="my_modal_3"
-          className="modal bg-black bg-opacity-80 rounded-lg max-w-md p-6 text-white"
-        >
-          <form method="dialog" className="relative">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-white">
-              ✕
-            </button>
-            <h3 className="text-2xl font-bold mb-4">Contact Us</h3>
-            <p className="mb-2">Email: mainul.hossain.chisty@g.bracu.ac.bd</p>
-            <p>Phone: 01634070584</p>
-          </form>
-        </dialog>
+        
+        <FAQ isOpen={ContactUsModal} onClose={toggleContactUsModal}></FAQ>
       </section>
 
       {/* Filters */}
@@ -473,7 +474,7 @@ const CustomerDashBoard = () => {
             placeholder="New Password"
             required
             minLength={6}
-            className="w-full px-4 py-2 border border-emerald-700 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            className="w-full px-4 py-2 border text-black border-emerald-700 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-600"
           />
           <input
             name="confirmPassword"
@@ -481,7 +482,7 @@ const CustomerDashBoard = () => {
             placeholder="Confirm New Password"
             required
             minLength={6}
-            className="w-full px-4 py-2 border border-emerald-700 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            className="w-full px-4 py-2 border text-black border-emerald-700 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-600"
           />
           <div className="flex justify-between items-center mt-6">
             <button

@@ -6,7 +6,6 @@ const logAudit = require('../tools/auditLogger');
 const { sendLoanNotification } = require('../emailService'); 
 
 // Approve a loan request
-// Approve a loan request
 router.patch('/approve/:id', authenticateToken, async (req, res) => {
     const user = req.user;
 

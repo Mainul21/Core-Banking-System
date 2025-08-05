@@ -9,7 +9,7 @@ const router = express.Router();
 router.post("/login", loginUser);
 
 //user route
-// In your backend route (authRoutes.js)
+
 router.get("/user", authMiddleware, async (req, res) => {
     try {
         console.log("Fetching user data for ID:", req.user?.id); // Debugging
@@ -27,14 +27,6 @@ router.get("/user", authMiddleware, async (req, res) => {
     }
 });
 
-// Protected routes
-// Customer dashboard (only accessible to customers)
-// router.get("/dashboard/customer", authMiddleware, customerDashboard);
 
-// Admin dashboard (only accessible to admins)
-// router.get("/dashboard/admin", authMiddleware, adminDashboard);
-
-// Employee dashboard (only accessible to employees)
-// router.get("/dashboard/employee", authMiddleware, employeeDashboard);
 
 module.exports = router;

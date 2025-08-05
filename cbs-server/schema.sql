@@ -129,3 +129,9 @@ CREATE TABLE loan_payments (
     
     status VARCHAR(20) DEFAULT 'due' CHECK (status IN ('due', 'paid', 'late'))
 );
+CREATE TABLE branches (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  address TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

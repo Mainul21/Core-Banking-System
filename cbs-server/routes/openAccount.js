@@ -25,7 +25,7 @@ const generatePassword = () => {
 // Employee creates a customer account
 router.post("/", async (req, res) => {
   try {
-    const { name, email, address, phone, amount } = req.body;
+    const { name, email, address, phone, amount, branch_id } = req.body; // Accept branch_id
 
     // Check if the email is already registered
     const existingUser = await pool.query(
@@ -36,11 +36,20 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "Email already exists" });
     }
 
+    // Check if branch_id exists
+    const branchExists = await pool.query(
+      "SELECT id FROM branches WHERE id = $1",
+      [branch_id]
+    );
+    if (branchExists.rows.length === 0) {
+      return res.status(400).json({ error: "Invalid branch ID" });
+    }
+
     // Generate random password and hash it
     const tempPassword = generatePassword();
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    // Insert new user into users table
+    // Insert new user into users table with role "customer"
     const newUser = await pool.query(
       "INSERT INTO users (name, email, phone_number, address, password, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
       [name, email, phone, address, hashedPassword, "customer"]
@@ -52,9 +61,11 @@ router.post("/", async (req, res) => {
 
     // Insert into customers table
     await pool.query(
-      "INSERT INTO customers (id, account_number, balance) VALUES ($1, $2, $3)",
-      [userId, accountNumber, initialBalance]
+      "INSERT INTO customers (id, account_number, balance, branch_id) VALUES ($1, $2, $3, $4)",
+      [userId, accountNumber, initialBalance, branch_id] // Include branch_id in the insert
     );
+
+    // Log the account creation
     await logAudit({
       user_id: null, // or pass the employee's ID if available
       action: "Create Customer Account",
@@ -67,6 +78,7 @@ router.post("/", async (req, res) => {
         address,
         account_number: accountNumber,
         initial_balance: initialBalance,
+        branch_id, // Include branch_id in metadata
       },
     });
 
@@ -79,6 +91,7 @@ router.post("/", async (req, res) => {
       account_number: accountNumber,
       password: tempPassword, // Employee will share this with the customer
       amount: initialBalance,
+      branch_id, // Include the branch_id in the response
     });
   } catch (error) {
     console.error(error);
