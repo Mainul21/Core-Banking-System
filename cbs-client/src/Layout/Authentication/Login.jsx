@@ -7,7 +7,7 @@ const Login = () => {
   const { login } = useContext(AuthContext);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
+  const base_url = "http://localhost:5000";
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
@@ -16,7 +16,7 @@ const Login = () => {
     const password = form.password.value;
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(`${base_url}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, password }), // Send id instead of email

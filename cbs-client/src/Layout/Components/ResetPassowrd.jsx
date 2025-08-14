@@ -7,7 +7,7 @@ const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
-
+  const base_url = "http://localhost:5000";
   const handleResetPassword = async (e) => {
     e.preventDefault();
 
@@ -17,7 +17,7 @@ const ResetPassword = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/forgot-password", {
+      const response = await fetch(`${base_url}/api/forgot-password`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ account_number: accountNumber, newPassword }), // Send account_number and newPassword

@@ -15,6 +15,7 @@ const loanApprovalRoutes = require("./routes/loanApproval");
 const customerLoanRoutes = require('./routes/customerLoan');
 const branchRoutes = require("./routes/branch"); 
 const statementRoutes = require("./routes/statement"); 
+const auditLogBranchRoutes = require("./routes/auditLogBranch"); 
 
 
 const app = express();
@@ -39,6 +40,32 @@ app.use("/api/loan-approval", loanApprovalRoutes); // Loan approval route
 app.use('/api/customer-loan', customerLoanRoutes); // Customer loan route
 app.use("/api/branches", branchRoutes); // Branch route
 app.use("/api/statement", statementRoutes); // Account statement route
+app.use("/api/audit-logs", auditLogBranchRoutes); // Audit logs by branch route
+// Exchange Rate API
+app.get("/api/exchange-rate", async (req, res) => {
+  try {
+    const url = `https://v6.exchangerate-api.com/v6/${process.env.EXCHANGE_RATE_API_KEY}/latest/BDT`
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    const data = await response.json();
+    const filteredRates = {
+      USD: data.conversion_rates.USD,
+      EUR: data.conversion_rates.EUR,
+      CAD: data.conversion_rates.CAD,
+      AUD: data.conversion_rates.AUD
+    };
+    res.json({
+      base: data.base_code,
+      date: data.time_last_update_utc,
+      rates: filteredRates
+    });
+  } catch (error) {
+    console.error("Error fetching exchange rates:", error.message);
+    res.status(500).json({ error: "Failed to fetch exchange rates" });
+  }
+});
 
 // Audit Logs
 // Get audit logs for admin dashboard

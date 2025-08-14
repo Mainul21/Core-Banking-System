@@ -16,12 +16,12 @@ export default function CreateEmployee() {
   });
 
   const [branches, setBranches] = useState([]);
-
+  const base_url = "http://localhost:5000";
   // Fetch branches from the backend
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/branches");
+        const response = await fetch(`${base_url}/api/branches`);
         const data = await response.json();
         if (response.ok) {
           setBranches(data); // Set branches to state
@@ -46,7 +46,7 @@ export default function CreateEmployee() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/create-employee", {
+      const response = await fetch(`${base_url}/api/create-employee`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

@@ -1,6 +1,7 @@
 const express = require("express");
 const pool = require("../db");
 const bcrypt = require("bcryptjs");
+const authMiddleware = require("../middleware/authMiddleware");
 const logAudit = require("../tools/auditLogger"); // Add this line at the top
 
 const router = express.Router();
@@ -23,7 +24,9 @@ const generatePassword = () => {
 };
 
 // Employee creates a customer account
-router.post("/", async (req, res) => {
+router.post("/",authMiddleware, async (req, res) => {
+  employeeID = req.user.id; // Assuming employee ID is in the token
+  
   try {
     const { name, email, address, phone, amount, branch_id } = req.body; // Accept branch_id
 
@@ -67,7 +70,7 @@ router.post("/", async (req, res) => {
 
     // Log the account creation
     await logAudit({
-      user_id: null, // or pass the employee's ID if available
+      user_id: employeeID, // or pass the employee's ID if available
       action: "Create Customer Account",
       target_type: "User",
       target_id: userId,

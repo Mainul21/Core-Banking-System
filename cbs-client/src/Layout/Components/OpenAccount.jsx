@@ -15,12 +15,13 @@ const OpenAccount = () => {
   const your_template_id = import.meta.env.VITE_EMAIL_TEMPLATE;
   const your_public_key = import.meta.env.VITE_EMAIL_PUBLIC_KEY;
   const navigate = useNavigate();
-
+  const base_url = "http://localhost:5000"
   // Fetch branches from the backend
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/branches");
+        const url = `${base_url}/api/branches`;
+        const response = await fetch(url);
         const data = await response.json();
         if (response.ok) {
           setBranches(data); // Set branches to state
@@ -49,9 +50,11 @@ const OpenAccount = () => {
     const data = { name, email, phone, address, amount, branch_id };
 
     try {
-      const response = await fetch("http://localhost:5000/api/account", {
+      const url = `${base_url}/api/account`;
+      const response = await fetch(url, {
         method: "POST",
         headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),

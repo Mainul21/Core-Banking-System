@@ -7,7 +7,7 @@ const FundTransfer = () => {
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
   const [role, setRole] = useState(""); // Save role from token
-
+  const base_url = "http://localhost:5000";
   useEffect(() => {
     const userString = localStorage.getItem("user");
     if (userString) {
@@ -53,7 +53,7 @@ const FundTransfer = () => {
     console.log("Prepared payload for fund transfer:", payload);
 
     try {
-      const response = await fetch("http://localhost:5000/api/fund-transfer", {
+      const response = await fetch(`${base_url}/api/fund-transfer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

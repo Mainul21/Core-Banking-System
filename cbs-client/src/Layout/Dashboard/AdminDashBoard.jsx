@@ -17,15 +17,15 @@ const AdminDashBoard = () => {
   const [showEmployees, setShowEmployees] = useState(false);
   const [showFundTransfer, setShowFundTransfer] = useState(false);
   const [transfers, setTransfers] = useState([]);
-
+  const base_url = "http://localhost:5000";
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [txRes, empRes, custRes, auditRes] = await Promise.all([
-          fetch("http://localhost:5000/api/transaction-history"),
-          fetch("http://localhost:5000/api/employees"),
-          fetch("http://localhost:5000/api/allAccounts"),
-          fetch("http://localhost:5000/api/audit-logs"),
+          fetch(`${base_url}/api/transaction-history`),
+          fetch(`${base_url}/api/employees`),
+          fetch(`${base_url}/api/allAccounts`),
+          fetch(`${base_url}/api/audit-logs`),
         ]);
 
         const txData = await txRes.json();
@@ -58,7 +58,7 @@ const AdminDashBoard = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/customers/${id}`,
+        `${base_url}/api/customers/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -93,7 +93,7 @@ const AdminDashBoard = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/employees/${id}`,
+        `${base_url}/api/employees/${id}`,
         {
           method: "DELETE",
         }
@@ -121,7 +121,7 @@ const AdminDashBoard = () => {
   useEffect(() => {
     const fetchFundTransfers = async () => {
       try {
-        const ft = await fetch("http://localhost:5000/api/allFundTransfers");
+        const ft = await fetch(`${base_url}/api/allFundTransfers`);
         const ftData = await ft.json();
         setTransfers(ftData);
       } catch (error) {
@@ -135,7 +135,7 @@ const AdminDashBoard = () => {
   const fetchPendingLoans = async () => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/loan-request/pending",
+        `${base_url}/api/loan-request/pending`,
         {
           method: "GET",
           headers: {
@@ -165,7 +165,7 @@ const AdminDashBoard = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/loan-approval/approve/${loanId}`,
+        `${base_url}/api/loan-approval/approve/${loanId}`,
         {
           method: "PATCH",
           headers: {
@@ -196,7 +196,7 @@ const AdminDashBoard = () => {
   const handleRejectLoan = async (loanId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/loan-approval/reject/${loanId}`,
+        `${base_url}/api/loan-approval/reject/${loanId}`,
         {
           method: "PATCH",
           headers: {

@@ -7,7 +7,7 @@ const Transaction = () => {
   const navigate = useNavigate();
   const { user, setInfo} = useContext(AuthContext);
   const role = user?.role;
-
+  const base_url = "http://localhost:5000";
   const handletransaction = (e) => {
     e.preventDefault();
     const form = e.target;
@@ -32,7 +32,7 @@ const Transaction = () => {
 
     const data = { acc_number, type, amount, id };
 
-    fetch("http://localhost:5000/api/transaction", {
+    fetch(`${base_url}/api/transaction`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

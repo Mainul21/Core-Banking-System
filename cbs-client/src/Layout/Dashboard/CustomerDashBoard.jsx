@@ -7,6 +7,7 @@ import { Link } from "react-router";
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
 import FAQ from "../Components/FAQ";
+import CountUp from "react-countup";
 const CustomerDashBoard = () => {
   const { user, logout, info } = useContext(AuthContext);
   const { id, name, balance, account_number, email } = user;
@@ -18,7 +19,10 @@ const CustomerDashBoard = () => {
   const [filterType, setFilterType] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  // const navigate = useNavigate();
+  const [rates, setRates] = useState(null);
+  const [ratesLoanding, setRatesLoading] = useState(true);
+  const [showRates, setShowRates] = useState(false);
+  const base_url = "http://localhost:5000"; // Base URL for API requests
   const [loanRequests, setLoanRequests] = useState([]);
   const [showLoans, setShowLoans] = useState(false);
 
@@ -38,8 +42,8 @@ const CustomerDashBoard = () => {
           toast.error("User not authenticated");
           return;
         }
-
-        const res = await fetch("http://localhost:5000/api/customer-loan", {
+        const url = `${base_url}/api/customer-loan`;
+        const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -65,7 +69,7 @@ const CustomerDashBoard = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        let url = `http://localhost:5000/api/customer-transaction/${id}`;
+        let url = `${base_url}/api/customer-transaction/${id}`;
         const params = new URLSearchParams();
         if (filterType) params.append("type", filterType);
         if (fromDate) params.append("from", fromDate);
@@ -95,52 +99,52 @@ const CustomerDashBoard = () => {
     setContactUsModal(!ContactUsModal);
   };
 
-const downloadStatement = async () => {
-  try {
-    const response = await fetch(`http://localhost:5000/api/statement/${user.account_number}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // Include JWT token for authentication
-        },
-      }
-    );
-    const transactions = await response.json();
-    console.log(transactions);
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text(`Account Statement for ${user.name}`, 14, 20);
-    doc.setFontSize(12);
-    doc.text(`Account Number: ${user.account_number}`, 14, 30);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 40);
+  const downloadStatement = async () => {
+    try {
+      const response = await fetch(
+        `${base_url}/api/statement/${user.account_number}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Include JWT token for authentication
+          },
+        }
+      );
+      const transactions = await response.json();
+      console.log(transactions);
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text(`Account Statement for ${user.name}`, 14, 20);
+      doc.setFontSize(12);
+      doc.text(`Account Number: ${user.account_number}`, 14, 30);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 40);
 
-    const tableColumn = ["Date", "Transaction Type", "Amount"];
-    const tableRows = transactions.map((transaction) => [
-      new Date(transaction.created_at).toLocaleDateString(),
-      transaction.transaction_type,
-      transaction.amount,
-    ]);
+      const tableColumn = ["Date", "Transaction Type", "Amount"];
+      const tableRows = transactions.map((transaction) => [
+        new Date(transaction.created_at).toLocaleDateString(),
+        transaction.transaction_type,
+        transaction.amount,
+      ]);
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 50,
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [22, 101, 52] },
-    });
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 50,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [22, 101, 52] },
+      });
 
-    doc.save(`statement-${user.account_number}.pdf`);
-  } catch (error) {
-    console.error('Error downloading statement:', error);
-  }
-};
-
+      doc.save(`statement-${user.account_number}.pdf`);
+    } catch (error) {
+      console.error("Error downloading statement:", error);
+    }
+  };
 
   const handleLoanPayment = async (paymentId) => {
     try {
       const token = localStorage.getItem("token"); // or wherever you store JWT
 
-      const res = await fetch("http://localhost:5000/api/customer-loan/repay", {
+      const res = await fetch(`${base_url}/api/customer-loan/repay`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -197,7 +201,7 @@ const downloadStatement = async () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/change-password",
+        `${base_url}/api/change-password`,
         {
           method: "PATCH",
           headers: {
@@ -224,6 +228,22 @@ const downloadStatement = async () => {
     }
   };
   console.log(loanRequests);
+  useEffect(() => {
+    async function fetchRates() {
+      const response = await fetch(`${base_url}/api/exchange-rate`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch rates");
+      }
+      const data = await response.json();
+      setRates(data);
+      setRatesLoading(false);
+      // console.log(data);
+    }
+    fetchRates();
+    console.log(rates);
+    const interval = setInterval(fetchRates, 24 * 60 * 60 * 1000); // Fetch every day
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
 
   if (!user)
     return <div className="text-white text-center mt-10">Loading...</div>;
@@ -266,7 +286,9 @@ const downloadStatement = async () => {
             Change Password
           </button>
           <button
-            onClick={() => {toggleContactUsModal()}}
+            onClick={() => {
+              toggleContactUsModal();
+            }}
             className="btn bg-gray-700 hover:bg-gray-600 text-white rounded-full px-6 py-2 font-semibold shadow-md transition"
           >
             Contact Us
@@ -277,9 +299,89 @@ const downloadStatement = async () => {
           >
             Download Statement
           </button>
+          {showRates ? (
+            <button
+              className="btn bg-fuchsia-700 hover:bg-fuchsia-800 text-white rounded-full px-6 py-2 font-semibold shadow-md transition"
+              onClick={() => setShowRates(false)}
+            >
+              Hide Exchange Rates
+            </button>
+          ) : (
+            <button
+              className="btn bg-fuchsia-700 hover:bg-fuchsia-800 text-white rounded-full px-6 py-2 font-semibold shadow-md transition"
+              onClick={() => setShowRates(true)}
+            >
+              Show Exchange Rates
+            </button>
+          )}
+
+          {showRates && (
+            <div className="bg-white bg-opacity-80 rounded-lg shadow-lg p-4 w-full max-w-md mt-4">
+              <h2 className="text-xl font-bold mb-4 text-emerald-900">
+                Exchange Rates
+              </h2>
+              {ratesLoanding ? (
+                <h2>Loading......</h2>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center mb-4">
+                    <h1 className="text-emerald-900 text-2xl font-bold mb-2">
+                      USD:
+                    </h1>
+                    <CountUp
+                      className="text-emerald-900 text-2xl font-bold ml-2 mb-2"
+                      start={0}
+                      end={rates.rates?.USD || 0}
+                      decimals={6}
+                      duration={1.5}
+                    />
+                    <span className="text-emerald-900 text-2xl font-bold ml-2 mb-2">TK</span>
+                  </div>
+                  <div className="flex items-center justify-center mb-4">
+                    <h1 className="text-emerald-900 text-2xl font-bold mb-2">
+                      CAD:
+                    </h1>
+                    <CountUp
+                      className="text-emerald-900 text-2xl font-bold ml-2 mb-2"
+                      start={0}
+                      end={rates.rates?.CAD || 0}
+                      decimals={6}
+                      duration={1.5}
+                    />
+                    <span className="text-emerald-900 text-2xl font-bold ml-2 mb-2">TK</span>
+                  </div>
+                  <div className="flex items-center justify-center mb-4">
+                    <h1 className="text-emerald-900 text-2xl font-bold mb-2">
+                      AUD:
+                    </h1>
+                    <CountUp
+                      className="text-emerald-900 text-2xl font-bold ml-2 mb-2"
+                      start={0}
+                      end={rates.rates?.AUD || 0}
+                      decimals={6}
+                      duration={1.5}
+                    />
+                    <span className="text-emerald-900 text-2xl font-bold ml-2 mb-2">TK</span>
+                  </div>
+                  <div className="flex items-center justify-center mb-4">
+                    <h1 className="text-emerald-900 text-2xl font-bold mb-2">
+                      EUR:
+                    </h1>
+                    <CountUp
+                      className="text-emerald-900 text-2xl font-bold ml-2 mb-2"
+                      start={0}
+                      end={rates.rates?.EUR || 0}
+                      decimals={6}
+                      duration={1.5}
+                    />
+                    <span className="text-emerald-900 text-2xl font-bold ml-2 mb-2">TK</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        
         <FAQ isOpen={ContactUsModal} onClose={toggleContactUsModal}></FAQ>
       </section>
 

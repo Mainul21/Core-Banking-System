@@ -8,10 +8,12 @@ const EmployeeDashBoard = () => {
   const [customers, setCustomers] = useState([]);
   const [openRow, setOpenRow] = useState(null);
   const [showTable, setShowTable] = useState(false);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [pendingTransfers, setPendingTransfers] = useState([]);
   const { user, logout } = useContext(AuthContext);
   const { name } = user;
-
+  const base_url = "http://localhost:5000";
   useEffect(() => {
     const message = localStorage.getItem("showLoginToast");
     if (message === "true") {
@@ -23,11 +25,15 @@ const EmployeeDashBoard = () => {
 
     const fetchCustomer = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/customer-info", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const url = `${base_url}/api/customer-info`;
+        const response = await fetch(
+          url,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const data = await response.json();
         setCustomers(data);
       } catch (error) {
@@ -39,15 +45,21 @@ const EmployeeDashBoard = () => {
 
     const fetchPendingTransfers = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/fund-transfer/pending", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const url = `${base_url}/api/fund-transfer/pending`;
+        const res = await fetch(
+          url,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const data = await res.json();
         setPendingTransfers(data.pendingTransfers);
       } catch (error) {
-        toast.error("Failed to load pending transfers", error, { position: "top-right" });
+        toast.error("Failed to load pending transfers", error, {
+          position: "top-right",
+        });
       }
     };
 
@@ -64,14 +76,20 @@ const EmployeeDashBoard = () => {
   const handleDelete = async (customerId) => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`http://localhost:5000/api/customer/${customerId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const url = `${base_url}/api/customer/${customerId}`;
+      const response = await fetch(
+        url,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (response.ok) {
-        toast.success("Customer deleted successfully!", { position: "top-right" });
+        toast.success("Customer deleted successfully!", {
+          position: "top-right",
+        });
         setCustomers(customers.filter((c) => c.id !== customerId));
       } else {
         toast.error("Error deleting customer", { position: "top-right" });
@@ -81,21 +99,51 @@ const EmployeeDashBoard = () => {
     }
   };
 
+  const fetchAuditlogBranch = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const url = `${base_url}/api/audit-logs/branch`;
+      const response = await fetch(
+        url,
+        {
+          headers: { authorization: `Bearer ${token}` },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch audit log");
+      }
+      const data = await response.json();
+      setAuditLogs(data);
+      console.log(data);
+    } catch (error) {
+      toast.error(error.message, { position: "top-right" });
+      return [];
+    }
+  };
+
   const handleApproveTransfer = async (transferId) => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`http://localhost:5000/api/fund-transfer/approve/${transferId}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const url = `${base_url}/api/fund-transfer/approve/${transferId}`;
+      const response = await fetch(
+        url,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (response.ok) {
         toast.success("Transfer approved!", { position: "top-right" });
-        setPendingTransfers(pendingTransfers.filter((t) => t.id !== transferId));
+        setPendingTransfers(
+          pendingTransfers.filter((t) => t.id !== transferId)
+        );
       } else {
         const data = await response.json();
-        toast.error(data.message||"Failed to approve transfer", { position: "top-right" });
+        toast.error(data.message || "Failed to approve transfer", {
+          position: "top-right",
+        });
       }
     } catch (error) {
       toast.error(error.message, { position: "top-right" });
@@ -130,8 +178,8 @@ const EmployeeDashBoard = () => {
       </button>
 
       {/* Customer List */}
-      {showTable && (
-        loading ? (
+      {showTable &&
+        (loading ? (
           <p className="text-xl font-medium bg-gradient-to-r from-green-300 to-emerald-200 bg-clip-text text-transparent select-none">
             Loading customer details...
           </p>
@@ -141,8 +189,12 @@ const EmployeeDashBoard = () => {
               <thead>
                 <tr className="bg-emerald-900 text-emerald-200 uppercase text-sm tracking-wider">
                   <th className="p-4 border-b border-emerald-700">Name</th>
-                  <th className="p-4 border-b border-emerald-700">Account Number</th>
-                  <th className="p-4 border-b border-emerald-700 text-center">Actions</th>
+                  <th className="p-4 border-b border-emerald-700">
+                    Account Number
+                  </th>
+                  <th className="p-4 border-b border-emerald-700 text-center">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -152,7 +204,9 @@ const EmployeeDashBoard = () => {
                       <tr
                         onClick={() => toggleRow(index)}
                         className={`cursor-pointer border-b border-emerald-700 hover:bg-emerald-800 transition-colors ${
-                          openRow === index ? "bg-emerald-900" : "bg-emerald-800"
+                          openRow === index
+                            ? "bg-emerald-900"
+                            : "bg-emerald-800"
                         }`}
                       >
                         <td className="p-4">{customer.name}</td>
@@ -171,12 +225,16 @@ const EmployeeDashBoard = () => {
                       </tr>
                       {openRow === index && (
                         <tr className="bg-emerald-700 text-emerald-200">
-                          <td colSpan="3" className="p-6 text-sm leading-relaxed">
+                          <td
+                            colSpan="3"
+                            className="p-6 text-sm leading-relaxed"
+                          >
                             <p>
                               <strong>Email:</strong> {customer.email}
                             </p>
                             <p>
-                              <strong>Balance:</strong> ${customer.balance.toFixed(2)}
+                              <strong>Balance:</strong> $
+                              {customer.balance.toFixed(2)}
                             </p>
                           </td>
                         </tr>
@@ -185,7 +243,10 @@ const EmployeeDashBoard = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" className="p-6 text-center text-emerald-300 font-medium">
+                    <td
+                      colSpan="3"
+                      className="p-6 text-center text-emerald-300 font-medium"
+                    >
                       No customers found
                     </td>
                   </tr>
@@ -193,12 +254,84 @@ const EmployeeDashBoard = () => {
               </tbody>
             </table>
           </div>
-        )
+        ))}
+
+      <button
+        className="mb-6 px-6 py-3 rounded-full bg-black bg-opacity-30 hover:bg-emerald-500 hover:text-black transition-all font-semibold shadow-md"
+        onClick={() => {
+          fetchAuditlogBranch();
+          setShowAuditLogs(!showAuditLogs);
+        }}
+      >
+        {showAuditLogs ? "Hide Audit Logs" : "Show Audit Logs"}
+      </button>
+
+      {/* Audit Log Section */}
+      {showAuditLogs && (
+        <div className="bg-black/30 shadow rounded-2xl p-4 mb-8 w-full max-w-6xl overflow-x-auto">
+          <table className="w-full table-fixed text-sm text-center border-collapse">
+            <thead className="bg-emerald-500 text-white">
+              <tr>
+                <th className="w-1/6 p-2">User</th>
+                <th className="w-1/6 p-2">Role</th>
+                <th className="w-1/6 p-2">Action</th>
+                <th className="w-2/6 p-2">Info</th>
+                <th className="w-1/6 p-2">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody className="">
+              {auditLogs.map((log) => (
+                <tr
+                  key={log.id}
+                  className="border-t hover:bg-gray-50 hover:text-black"
+                >
+                  <td className="p-2">{log.user_name}</td>
+                  <td className="capitalize p-2">{log.user_role}</td>
+                  <td className="p-2">{log.action}</td>
+                  <td className="p-2">
+                    <button
+                      className="btn border-0"
+                      onClick={() =>
+                        document
+                          .getElementById(`my_modal_${log.id}`)
+                          .showModal()
+                      }
+                    >
+                      open modal
+                    </button>
+                    <dialog id={`my_modal_${log.id}`} className="modal">
+                      <div className="modal-box">
+                        <h3 className="font-bold text-lg text-white">
+                          Audit Data
+                        </h3>
+                        <h2 className="py-4 flex flex-col text-white">
+                          {log.metadata
+                            ? JSON.stringify(log.metadata, null, 2)
+                            : "No metadata available"}
+                        </h2>
+                        <div className="modal-action">
+                          <form method="dialog">
+                            <button className="btn">Close</button>
+                          </form>
+                        </div>
+                      </div>
+                    </dialog>
+                  </td>
+                  <td className="p-2">
+                    {new Date(log.timestamp).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* Pending Transfers */}
       <section className="w-full max-w-6xl mt-10 bg-black/30 bg-opacity-30 rounded-xl p-6 shadow-lg">
-        <h2 className="text-2xl font-bold mb-6 text-emerald-300 tracking-wide">Pending Fund Transfers</h2>
+        <h2 className="text-2xl font-bold mb-6 text-emerald-300 tracking-wide">
+          Pending Fund Transfers
+        </h2>
         {pendingTransfers.length === 0 ? (
           <p className="text-emerald-400 italic">No pending transfers.</p>
         ) : (
@@ -209,7 +342,9 @@ const EmployeeDashBoard = () => {
                   <th className="p-4 border-b border-emerald-700">Sender</th>
                   <th className="p-4 border-b border-emerald-700">Receiver</th>
                   <th className="p-4 border-b border-emerald-700">Amount</th>
-                  <th className="p-4 border-b border-emerald-700 text-center">Action</th>
+                  <th className="p-4 border-b border-emerald-700 text-center">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -238,22 +373,34 @@ const EmployeeDashBoard = () => {
       </section>
       {/* Feature Cards */}
       <nav className="flex flex-col md:flex-row items-center justify-center gap-8 mt-12 w-full max-w-6xl">
-        <Link to="/OpenAccount" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
+        <Link
+          to="/OpenAccount"
+          className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black"
+        >
           <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
             Open Account
           </span>
         </Link>
-        <Link to="/transactions" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
+        <Link
+          to="/transactions"
+          className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black"
+        >
           <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
             Make Transaction
           </span>
         </Link>
-        <Link to="/fund-transfer" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
+        <Link
+          to="/fund-transfer"
+          className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black"
+        >
           <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
             Transfer Fund
           </span>
         </Link>
-        <Link to="/loan-request" className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black">
+        <Link
+          to="/loan-request"
+          className="border rounded-xl p-5 w-50 h-40 flex items-center justify-center transition-all duration-700 hover:scale-105 hover:bg-emerald-500 hover:text-2xl bg-black/30 hover:font-bold hover:text-black"
+        >
           <span className="text-2xl font-bold text-white hover:text-emerald-100 select-none text-center">
             Loan Request
           </span>

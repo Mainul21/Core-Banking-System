@@ -11,7 +11,7 @@ export default function LoanRequest() {
     interestRate: "",
     purpose: "",
   });
-
+  const base_url = "http://localhost:5000";
   const {employee_id} = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {};
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -21,7 +21,7 @@ export default function LoanRequest() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/loan-request", {
+      const response = await fetch(`${base_url}/api/loan-request`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
