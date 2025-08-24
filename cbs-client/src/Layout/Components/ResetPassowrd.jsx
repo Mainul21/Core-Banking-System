@@ -7,7 +7,7 @@ const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
-  const base_url = "http://localhost:5000";
+  const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
   const handleResetPassword = async (e) => {
     e.preventDefault();
 

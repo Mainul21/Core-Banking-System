@@ -22,7 +22,7 @@ const CustomerDashBoard = () => {
   const [rates, setRates] = useState(null);
   const [ratesLoanding, setRatesLoading] = useState(true);
   const [showRates, setShowRates] = useState(false);
-  const base_url = "http://localhost:5000"; // Base URL for API requests
+  const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:5000"; // Base URL for API requests
   const [loanRequests, setLoanRequests] = useState([]);
   const [showLoans, setShowLoans] = useState(false);
 

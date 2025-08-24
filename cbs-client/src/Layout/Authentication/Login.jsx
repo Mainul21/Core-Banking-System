@@ -7,7 +7,7 @@ const Login = () => {
   const { login } = useContext(AuthContext);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const base_url = "http://localhost:5000";
+  const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);

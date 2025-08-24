@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 require("dotenv").config();
 const pool = require("./db");
+const helmet = require("helmet");
+//////////////////////////////////////////////////////////////
 const authRoutes = require("./routes/auth");
 const accountRoutes = require("./routes/openAccount");
 const customerRoutes = require("./routes/deleteCustomerAccount");
@@ -16,17 +18,13 @@ const customerLoanRoutes = require('./routes/customerLoan');
 const branchRoutes = require("./routes/branch"); 
 const statementRoutes = require("./routes/statement"); 
 const auditLogBranchRoutes = require("./routes/auditLogBranch"); 
-
-
+///////////////////////////////////////////////////////////////////////////////////
 const app = express();
 const port = 5000 || process.env.PORT;
-
 // middleware
-
 app.use(cors({ origin: "*", credentials: true }));
-
+app.use(helmet());
 app.use(express.json());
-
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/api/account", accountRoutes);

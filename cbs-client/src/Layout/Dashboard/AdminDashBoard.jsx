@@ -17,7 +17,7 @@ const AdminDashBoard = () => {
   const [showEmployees, setShowEmployees] = useState(false);
   const [showFundTransfer, setShowFundTransfer] = useState(false);
   const [transfers, setTransfers] = useState([]);
-  const base_url = "http://localhost:5000";
+  const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
   useEffect(() => {
     const fetchData = async () => {
       try {

@@ -13,7 +13,7 @@ const EmployeeDashBoard = () => {
   const [pendingTransfers, setPendingTransfers] = useState([]);
   const { user, logout } = useContext(AuthContext);
   const { name } = user;
-  const base_url = "http://localhost:5000";
+  const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
   useEffect(() => {
     const message = localStorage.getItem("showLoginToast");
     if (message === "true") {

@@ -16,7 +16,7 @@ export default function CreateEmployee() {
   });
 
   const [branches, setBranches] = useState([]);
-  const base_url = "http://localhost:5000";
+  const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
   // Fetch branches from the backend
   useEffect(() => {
     const fetchBranches = async () => {
