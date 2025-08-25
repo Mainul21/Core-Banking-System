@@ -11,7 +11,7 @@ export default function LoanRequest() {
     interestRate: "",
     purpose: "",
   });
-  const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
+  const base_url = import.meta.env.VITE_BASE_URL;
   const {employee_id} = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {};
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });

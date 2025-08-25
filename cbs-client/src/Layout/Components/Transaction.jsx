@@ -7,7 +7,7 @@ const Transaction = () => {
   const navigate = useNavigate();
   const { user, setInfo} = useContext(AuthContext);
   const role = user?.role;
-  const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
+  const base_url = import.meta.env.VITE_BASE_URL;
   const handletransaction = (e) => {
     e.preventDefault();
     const form = e.target;

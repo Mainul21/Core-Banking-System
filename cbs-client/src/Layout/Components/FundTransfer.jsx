@@ -7,7 +7,7 @@ const FundTransfer = () => {
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
   const [role, setRole] = useState(""); // Save role from token
-  const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
+  const base_url = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     const userString = localStorage.getItem("user");
     if (userString) {

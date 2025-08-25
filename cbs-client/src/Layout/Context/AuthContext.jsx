@@ -28,7 +28,7 @@ const AuthProvider = ({ children }) => {
       setUser(parsed);
   
       if (parsed.email) {
-        fetch(`http://localhost:5000/api/user?email=${parsed.email}`)
+        fetch(`${import.meta.env.VITE_BASE_URL}/api/user?email=${parsed.email}`)
           .then((res) => res.json())
           .then((data) => {
             console.log("Fetched User:", data);

@@ -15,7 +15,7 @@ const OpenAccount = () => {
   const your_template_id = import.meta.env.VITE_EMAIL_TEMPLATE;
   const your_public_key = import.meta.env.VITE_EMAIL_PUBLIC_KEY;
   const navigate = useNavigate();
-  const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:5000"
+  const base_url = import.meta.env.VITE_BASE_URL
   // Fetch branches from the backend
   useEffect(() => {
     const fetchBranches = async () => {
