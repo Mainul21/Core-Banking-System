@@ -20,3 +20,4 @@ const pool = new Pool({
     console.error("❌ DB Connection failed:", err.message);
   }
 })();
+module.exports = pool;
