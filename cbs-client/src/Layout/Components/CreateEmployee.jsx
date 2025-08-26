@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Navigate } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 
+
 export default function CreateEmployee() {
   const [formData, setFormData] = useState({
     name: "",
@@ -17,6 +18,7 @@ export default function CreateEmployee() {
 
   const [branches, setBranches] = useState([]);
   const base_url = import.meta.env.VITE_BASE_URL;
+  
   // Fetch branches from the backend
   useEffect(() => {
     const fetchBranches = async () => {

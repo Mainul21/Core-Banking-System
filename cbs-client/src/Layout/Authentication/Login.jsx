@@ -16,6 +16,7 @@ const Login = () => {
     const password = form.password.value;
 
     try {
+      console.log(base_url);
       const response = await fetch(`${base_url}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
