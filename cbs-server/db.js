@@ -1,23 +1,22 @@
-const {Pool} = require("pg");
+const { Pool } = require("pg");
 require("dotenv").config();
 
 const pool = new Pool({
-  // user: process.env.DB_USER,
-  // password: process.env.DB_PASS,
-  // host: process.env.DB_HOST,
-  // port: process.env.DB_PORT,
-  // database: process.env.DB_NAME
   connectionString: process.env.DATABASE_URL,
-  ssl: {rejectUnauthorized: false},
-  max: 5, // maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // close idle clients after 30 seconds    
-  connectionTimeoutMillis: 5000, // return an error after 2 seconds if connection could not be established
+  ssl: { rejectUnauthorized: false }, // Neon requires SSL
+  max: 5,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
 });
 
-//check if the connection is successful
-pool
-    .connect()
-    .then(() => console.log("Postgres connected"))
-    .catch((err) => console.error("Postgres connection error", err));
-
-module.exports = pool;
+// test connection
+(async () => {
+  try {
+    const client = await pool.connect();
+    const res = await client.query("SELECT NOW()");
+    console.log("✅ Connected at:", res.rows[0]);
+    client.release();
+  } catch (err) {
+    console.error("❌ DB Connection failed:", err.message);
+  }
+})();
