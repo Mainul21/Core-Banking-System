@@ -20,7 +20,7 @@ const statementRoutes = require("./routes/statement");
 const auditLogBranchRoutes = require("./routes/auditLogBranch"); 
 ///////////////////////////////////////////////////////////////////////////////////
 const app = express();
-const port = 5000 || process.env.PORT;
+const port = process.env.PORT;
 // middleware
 app.use(cors({ origin: "https://core-banking-system-850t.onrender.com", methods: ["GET", "POST", "PATCH", "DELETE"], allowedHeaders: ["Content-Type", "Authorization"] }));
 app.use(helmet());
