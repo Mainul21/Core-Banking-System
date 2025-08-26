@@ -55,7 +55,7 @@ const Transaction = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center px-4 bg-[url('./transaction-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300">
+    <div className="h-screen flex flex-col items-center justify-center px-4 bg-[url('/transaction-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300">
       <div className="hero">
         <div className="hero-content flex-col lg:flex-col">
           <div className="text-center lg:text-center">

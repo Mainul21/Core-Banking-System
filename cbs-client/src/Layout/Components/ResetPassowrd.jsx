@@ -37,7 +37,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="hero bg-base-200 min-h-screen bg-[url('./bg-login.jpg')] bg-cover bg-center bg-no-repeat">
+    <div className="hero bg-base-200 min-h-screen bg-[url('/bg-login.jpg')] bg-cover bg-center bg-no-repeat">
       <div className="hero-content flex-col lg:flex-col">
         <div className="text-center lg:text-center">
           <h1 className="text-5xl font-bold text-emerald-500">Reset Password</h1>

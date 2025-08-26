@@ -249,7 +249,7 @@ const CustomerDashBoard = () => {
     return <div className="text-white text-center mt-10">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-[url('./cd-bg.jpg')] bg-center bg-cover bg-no-repeat px-6 py-10 flex flex-col items-center text-emerald-100">
+    <div className="min-h-screen bg-[url('/cd-bg.jpg')] bg-center bg-cover bg-no-repeat px-6 py-10 flex flex-col items-center text-emerald-100">
       <h1 className="text-4xl font-extrabold mb-8 drop-shadow-lg text-center">
         Welcome, {name}
       </h1>

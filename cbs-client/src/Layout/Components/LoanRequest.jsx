@@ -56,7 +56,7 @@ export default function LoanRequest() {
   };
 
   return (
-    <div className="min-h-screen bg-[url('./loan.jpg')] bg-center bg-cover bg-no-repeat p-4 md:p-8">
+    <div className="min-h-screen bg-[url('/loan.jpg')] bg-center bg-cover bg-no-repeat p-4 md:p-8">
       <div className="max-w-md mx-auto mt-8 p-6 bg-transparent shadow-2xl shadow-black rounded-md">
         <h2 className="text-2xl font-bold mb-4 text-center text-black">
           Loan Request Form

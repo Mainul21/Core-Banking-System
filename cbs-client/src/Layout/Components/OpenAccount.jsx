@@ -112,7 +112,7 @@ const OpenAccount = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[url('./acc-bg.jpg')] bg-cover bg-center text-emerald-300">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[url('/acc-bg.jpg')] bg-cover bg-center text-emerald-300">
       <h1 className="text-center mb-6 mt-6 text-3xl font-bold bg-gradient-to-r from-emerald-500 to-white bg-clip-text text-transparent">
         Account Opening
       </h1>

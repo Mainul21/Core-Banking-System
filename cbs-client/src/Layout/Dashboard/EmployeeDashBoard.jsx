@@ -155,7 +155,7 @@ const EmployeeDashBoard = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-6 py-8 bg-[url('./emp-bg.jpg')] bg-center bg-cover bg-no-repeat text-emerald-100 overflow-auto">
+    <div className="min-h-screen flex flex-col items-center justify-start px-6 py-8 bg-[url('/emp-bg.jpg')] bg-center bg-cover bg-no-repeat text-emerald-100 overflow-auto">
       {/* Header */}
       <header className="w-full max-w-6xl bg-black/30 bg-opacity-40 rounded-xl shadow-lg p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-4xl font-extrabold tracking-wide bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent select-none">

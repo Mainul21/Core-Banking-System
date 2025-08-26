@@ -88,7 +88,7 @@ const FundTransfer = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-4 py-6 bg-[url('./fund-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300 overflow-auto">
+    <div className="min-h-screen flex flex-col items-center justify-start px-4 py-6 bg-[url('/fund-bg.jpg')] bg-cover bg-center bg-no-repeat text-emerald-300 overflow-auto">
       <div className="max-w-md mx-auto mt-10 p-6 bg-black/30 rounded-lg shadow-xl">
         <h2 className="text-2xl font-bold mb-4">Fund Transfer</h2>
         {message && (

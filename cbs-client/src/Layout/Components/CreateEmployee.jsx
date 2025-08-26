@@ -74,7 +74,7 @@ export default function CreateEmployee() {
   };
 
   return (
-    <div className="min-h-screen bg-[url('./create.jpg')] bg-center bg-cover bg-no-repeat p-4 md:p-8">
+    <div className="min-h-screen bg-[url('/create.jpg')] bg-center bg-cover bg-no-repeat p-4 md:p-8">
       <div className="max-w-xl mx-auto p-6 bg-transparent rounded-2xl shadow-2xl shadow-black mt-10">
         <h2 className="text-2xl font-bold mb-6 text-center text-black">Create New Employee</h2>
 

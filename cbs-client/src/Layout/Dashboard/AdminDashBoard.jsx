@@ -221,7 +221,7 @@ const AdminDashBoard = () => {
   if (!data) return <div className="text-center p-10">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-[url('./Admin-bg.jpg')] bg-center bg-cover bg-no-repeat p-4 md:p-8">
+    <div className="min-h-screen bg-[url('/Admin-bg.jpg')] bg-center bg-cover bg-no-repeat p-4 md:p-8">
       <h1 className="text-3xl font-bold mb-6 text-center text-emerald-500">
         Admin Dashboard
       </h1>
