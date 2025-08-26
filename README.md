@@ -79,7 +79,10 @@ This is a **Core Banking System** developed to demonstrate proficiency in the ME
 - **Admin**: Log in to access all features, including user management and system-wide operations.
 
 ## Live Demo
-The application is not yet deployed. Stay tuned for updates on the live link!
+**Live Link**: https://core-banking-system-850t.onrender.com
+
+## Deployment
+**Frontend** is deployed using render static site and **Backend** is deployed as render static service. **Database** is managed with Neon
 
 ## License
 This project is licensed under the MIT License.
