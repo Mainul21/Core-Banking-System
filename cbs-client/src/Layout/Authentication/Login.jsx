@@ -1,25 +1,28 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../Context/AuthContext";
-import { NavLink, useNavigate } from "react-router"; 
+import { NavLink, useNavigate } from "react-router";
 import { ToastContainer, toast } from "react-toastify";
 
 const Login = () => {
   const { login } = useContext(AuthContext);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false); // ✅ loading state
   const navigate = useNavigate();
   const base_url = import.meta.env.VITE_BASE_URL;
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
+    setLoading(true); // ✅ start loading
     const form = e.target;
-    const id = form.id.value; // Change from email to id
+    const id = form.id.value;
     const password = form.password.value;
 
     try {
       const response = await fetch(`${base_url}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, password }), // Send id instead of email
+        body: JSON.stringify({ id, password }),
       });
 
       const data = await response.json();
@@ -31,25 +34,23 @@ const Login = () => {
 
       if (data.token) {
         localStorage.setItem("token", data.token);
-        // localStorage.setItem("user", JSON.stringify(data.user)); // Store user details
-        localStorage.setItem("showLoginToast", "true"); // for toast
+        localStorage.setItem("showLoginToast", "true");
         login(data.token, data.role, data.user, data.id);
-        // console.log(data.role);
       } else {
         console.error("Token missing from API response");
       }
 
       toast.success("Login successful!", { position: "top-right" });
 
-      // Use setTimeout to delay navigation after toast
-      
-        if(data.role === "admin") navigate("/admin-dashboard");
-        else if(data.role === "customer") navigate("/customer-dashboard");
-        else navigate("/employee-dashboard"); // Adjust this based on user role
-      
+      if (data.role === "admin") navigate("/admin-dashboard");
+      else if (data.role === "customer") navigate("/customer-dashboard");
+      else navigate("/employee-dashboard");
+
     } catch (err) {
       setError(err.message);
       toast.error(err.message, { position: "top-right" });
+    } finally {
+      setLoading(false); // ✅ stop loading
     }
   };
 
@@ -68,8 +69,8 @@ const Login = () => {
                 {error && <p className="text-red-500">{error}</p>}
                 <label className="fieldset-label bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Account Number / Employee ID / Admin ID</label>
                 <input
-                  name="id" // Change name to id
-                  type="text" // Change type to text
+                  name="id"
+                  type="text"
                   className="input"
                   placeholder="Enter your ID"
                   required
@@ -83,13 +84,18 @@ const Login = () => {
                   required
                 />
                 <div className="flex-col-reverse">
-                  <a onClick={()=>navigate('/reset-password')} className="link link-hover bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Forgot password?</a>
+                  <a onClick={() => navigate('/reset-password')} className="link link-hover bg-gradient-to-r from-black to-emerald-500 bg-clip-text text-transparent">Forgot password?</a>
                 </div>
-                <div>
-             
-                </div>
-                <button className="btn btn-neutral mt-4" type="submit">
-                  Login
+                <button
+                  className="btn btn-neutral mt-4 w-full"
+                  type="submit"
+                  disabled={loading} // ✅ disable button when loading
+                >
+                  {loading ? (
+                    <span className="loading loading-spinner loading-sm text-black"></span> // ✅ DaisyUI spinner
+                  ) : (
+                    "Login"
+                  )}
                 </button>
               </fieldset>
             </form>
